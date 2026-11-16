@@ -91,19 +91,19 @@
       "메뉴 → STAGE 1 → STAGE 2 → 보스 → 메뉴, 게임오버 · 재시작 · 일시정지까지 구현",
       "흰·검 발판 추가는 코드 수정 0줄 — STAGE 2의 발판 20개(흰 9 · 검 11)를 프리팹 배치만으로 넣음",
       "패턴 전환 · 그로기 · 사망 어느 경로에서도 이전 패턴의 탄이 남지 않음 (테스트 3회 모두 남은 투사체 0개)",
-      "테스트 플레이로 새 버그 3건 발견(11.09)"
+      "스테이지 기믹 7종: 레드 타일, 총알 발사기, 박스, 전구, 이동 발판, 레이저 반사, 크러셔 벽"
     ],
     "regrets": [
       "STAGE 1 총알 · STAGE 2 레드 타일 · 보스 레이저가 충돌 설정 문제로 맞지 않는다 (테스트로 발견, 미수정)",
       "Shift 순간 다른 색 발판 안에 갇힌다 (겹침 해소 없음)",
       "`PlatformManager`가 이유였던 랜덤 발판이 사라진 뒤에도 매 프레임 태그로 발판을 다시 찾는다",
-      "`BossManager`가 패턴의 구체 타입과 애니메이션 트리거를 `switch`로 직접 안다"
+      "`BossManager`가 패턴 타입과 애니메이션 트리거를 `switch`로 안다"
     ],
     "plans": [
       "총알·레드 타일 콜라이더를 트리거로 바꾸고, 보스 레이저 판정 박스를 보이는 크기로 줄인다",
-      "Shift 전에 `Physics2D.OverlapBox`로 새 색 발판과 겹치는지 확인해 막거나 바깥으로 밀어낸다",
+      "Shift 직전에 겹침을 검사해 막거나 바깥으로 밀어낸다. 꺼진 콜라이더는 `Physics2D.OverlapBox`에 잡히지 않으므로 `SpriteRenderer.bounds`로 직접 검사한다",
       "시작할 때 한 번 모으고, `Shifter`가 속성을 바꿀 때 이벤트를 내면 그때만 갱신한다",
-      "`IBossPattern`이 자기 애니메이션 트리거를 갖게 하고, `GetComponents<IBossPattern>()` 배열에서 무작위로 고른다"
+      "패턴이 자기 트리거를 갖고, `GetComponents<IBossPattern>()`에서 무작위로 고른다"
     ]
   },
   "deck": {
@@ -201,7 +201,7 @@
         "layout": "full",
         "tab": "구조",
         "title": {"text": "3.1 문제와 구조", "verbatim": true},
-        "lead": {"text": "크러셔 벽은 규칙을 뒤집었습니다. 발판에서 익힌 \"같은 색 = 단단함\"과 반대로, 벽은 같은 색일 때 통과하고 다른 색일 때 밀어냅니다.", "verbatim": true},
+        "lead": {"text": "크러셔 벽은 규칙을 뒤집었습니다. 발판에서 익힌 \"같은 색 = 단단함\"을 STAGE 2 마지막 구간에서 거꾸로 쓰게 하는 변주입니다.", "verbatim": true},
         "sectionPath": ["3. Shift 속성 시스템", "3.1 문제와 구조"],
         "points": [],
         "visuals": [{"kind": "table", "n": 1, "fp": "대상|플레이어와 같은 색|다른 색|비고"}]
@@ -215,8 +215,8 @@
         "lead": null,
         "sectionPath": ["3. Shift 속성 시스템", "3.1 문제와 구조"],
         "points": [
-          {"label": "", "text": "회색(Common)은 출발 상태입니다. 흰·검 발판을 모두 밟을 수 없지만 흰·검 탄환에도 맞지 않습니다.", "verbatim": true},
-          {"label": "", "text": "첫 Shift 뒤에는 흰 ↔ 검만 오가고 회색으로 돌아오지 않습니다.", "verbatim": true}
+          {"label": "", "text": "회색(Common)은 출발 상태입니다. 흰·검 발판을 밟을 수 없는 대신 흰·검 탄환에도 맞지 않습니다.", "verbatim": true},
+          {"label": "", "text": "'안전하지만 멀리 갈 수 없는' 상태에서 출발해, 나아가려면 색을 골라야 합니다.", "verbatim": true}
         ],
         "visuals": [
           {
@@ -266,7 +266,7 @@
           {"label": "결정 2", "text": "씬당 관리 대상이 30개 이하라 검색 비용보다 '새 발판을 놓치지 않는 것'이 중요했습니다.", "verbatim": true},
           {
             "label": "결정 3",
-            "text": "돌아보면 이 선택 덕분에, 2주 뒤에 만든 레이저 퍼즐(07.07)이 추가 코드 없이 Shift 규칙을 따랐습니다.",
+            "text": "첫 구현(06.25)부터 콜라이더를 껐고, 덕분에 2주 뒤 만든 레이저 퍼즐(07.07)이 추가 코드 없이 Shift 규칙을 따랐습니다.",
             "verbatim": true
           }
         ],
@@ -305,9 +305,9 @@
         "lead": null,
         "sectionPath": ["4. 스테이지 기믹과 퍼즐", "4.3 핵심 동작"],
         "points": [
-          {"label": "", "text": "`Vector2.Reflect(입사 방향, 면의 법선)`이라 거울 각도를 따로 저장하지 않습니다.", "verbatim": true},
-          {"label": "", "text": "맞은 점에서 그대로 다시 쏘면 방금 맞은 면을 또 맞힙니다. 진행 방향으로 조금 띄워 출발합니다.", "verbatim": true},
-          {"label": "", "text": "다른 색 발판은 콜라이더가 꺼져 있으므로 레이캐스트에 맞지 않습니다. 그래서 Shift가 빛의 길을 바꿉니다", "verbatim": true}
+          {"label": "", "text": "`Vector2.Reflect`라 거울 각도를 저장하지 않고, 거울을 돌리면 반사각도 따라 바뀝니다.", "verbatim": true},
+          {"label": "", "text": "맞은 점에서 그대로 쏘면 방금 맞은 면(플레이어 몸, 거울)을 또 맞힙니다.", "verbatim": true},
+          {"label": "", "text": "다른 색 발판은 콜라이더가 꺼져 있어 레이캐스트에 맞지 않습니다. Shift가 빛의 길을 바꾸는 이유입니다", "verbatim": true}
         ],
         "visuals": [
           {
@@ -329,10 +329,14 @@
         "points": [
           {
             "label": "",
-            "text": "그래서 벽과 플레이어의 겹침(bounds)을 직접 검사하고, 벽이 움직인 만큼(`wallDelta`)을 `AddExternalMovement`로 더합니다.",
+            "text": "그래서 겹침(bounds)을 직접 검사하고 벽이 움직인 만큼(`wallDelta`)을 `AddExternalMovement`로 넘깁니다.",
             "verbatim": true
           },
-          {"label": "", "text": "벽(초당 10)이 플레이어(초당 8)보다 빨라 다른 색 벽에서 달아날 수 없습니다.", "verbatim": true}
+          {
+            "label": "",
+            "text": "벽(초당 10)이 플레이어(초당 8)보다 빨라 달아날 수 없지만, Shift 쿨타임(1초)이 벽 간격(1.2초)보다 짧아 벽이 올 때마다 색을 맞출 수 있습니다.",
+            "verbatim": true
+          }
         ],
         "visuals": [
           {
@@ -377,15 +381,29 @@
         "visuals": [{"kind": "mermaid", "n": 1, "fp": "stateDiagram-v2"}]
       },
       {
+        "key": "boss-timeline",
+        "chapter": "boss",
+        "layout": "full",
+        "tab": "흐름",
+        "title": {"text": "5.1 문제와 구조", "verbatim": true},
+        "lead": {
+          "text": "빨간 ①②③이 약점이 열리는 그로기(각 5초)입니다. 패턴이 30초씩 이어지는 동안 그로기는 5초뿐이라, 한 번 놓치면 다음 기회까지 40초를 기다려야 합니다.",
+          "verbatim": true
+        },
+        "sectionPath": ["5. 보스전", "5.1 문제와 구조"],
+        "points": [],
+        "visuals": [{"kind": "mermaid", "n": 2, "fp": "gantt"}]
+      },
+      {
         "key": "boss-patterns",
         "chapter": "boss",
         "layout": "full",
         "tab": "결과",
         "title": {"text": "5.1 문제와 구조", "verbatim": true},
-        "lead": {"text": "탄마다 흰색 또는 검은색이 섞여 날아오므로, 한 색으로 버티는 대신 다가오는 탄과 다른 색이 되도록 Shift 시점을 골라야 합니다.", "verbatim": true},
+        "lead": {"text": "탄마다 흰색·검은색이 섞여 오므로, 다가오는 탄과 다른 색이 되도록 Shift 시점을 골라야 합니다", "verbatim": true},
         "sectionPath": ["5. 보스전", "5.1 문제와 구조"],
         "points": [],
-        "visuals": [{"kind": "table", "n": 3, "fp": "운석|난사|레이저"}]
+        "visuals": [{"kind": "table", "n": 2, "fp": "운석|난사|레이저"}]
       },
       {
         "key": "boss-pattern-change",
@@ -484,7 +502,7 @@
             "text": "크러셔 벽에 콜라이더를 켜 두면 벽이 플레이어와 겹치는 순간 플레이어가 얼어붙었고, 보스전 랜덤 발판이 플레이어 위치에 생기면 빠져나올 수 없었습니다.",
             "verbatim": true
           },
-          {"label": "원인", "text": "겹친 상태에서는 모든 방향이 거리 0으로 막힙니다. 키네마틱 이동에는 겹침을 풀어 주는 처리가 없습니다.", "verbatim": true},
+          {"label": "원인", "text": "겹친 상태에서는 모든 방향이 거리 0으로 막힙니다. 키네마틱 이동에는 겹침을 풀어 주는 처리가 없습니다", "verbatim": true},
           {"label": "해결", "text": "크러셔 벽은 콜라이더를 끄고 겹침을 직접 검사해 벽 이동량만큼 플레이어를 옮겼습니다", "verbatim": true},
           {"label": "해결", "text": "랜덤 발판은 생성 위치 검사 규칙을 만드는 대신 기능을 걷어냈습니다", "verbatim": true}
         ],
@@ -563,7 +581,7 @@
         "layout": "full",
         "tab": "구조",
         "title": {"text": "3.1 문제와 구조", "verbatim": true},
-        "lead": {"text": "크러셔 벽은 규칙을 뒤집었습니다. 발판에서 익힌 \"같은 색 = 단단함\"과 반대로, 벽은 같은 색일 때 통과하고 다른 색일 때 밀어냅니다.", "verbatim": true},
+        "lead": {"text": "크러셔 벽은 규칙을 뒤집었습니다. 발판에서 익힌 \"같은 색 = 단단함\"을 STAGE 2 마지막 구간에서 거꾸로 쓰게 하는 변주입니다.", "verbatim": true},
         "sectionPath": ["3. Shift 속성 시스템", "3.1 문제와 구조"],
         "points": [],
         "visuals": [{"kind": "table", "n": 1, "fp": "대상|플레이어와 같은 색|다른 색|비고"}]
@@ -577,8 +595,8 @@
         "lead": null,
         "sectionPath": ["3. Shift 속성 시스템", "3.1 문제와 구조"],
         "points": [
-          {"label": "", "text": "회색(Common)은 출발 상태입니다. 흰·검 발판을 모두 밟을 수 없지만 흰·검 탄환에도 맞지 않습니다.", "verbatim": true},
-          {"label": "", "text": "첫 Shift 뒤에는 흰 ↔ 검만 오가고 회색으로 돌아오지 않습니다.", "verbatim": true}
+          {"label": "", "text": "회색(Common)은 출발 상태입니다. 흰·검 발판을 밟을 수 없는 대신 흰·검 탄환에도 맞지 않습니다.", "verbatim": true},
+          {"label": "", "text": "'안전하지만 멀리 갈 수 없는' 상태에서 출발해, 나아가려면 색을 골라야 합니다.", "verbatim": true}
         ],
         "visuals": [
           {
@@ -628,7 +646,7 @@
           {"label": "결정 2", "text": "씬당 관리 대상이 30개 이하라 검색 비용보다 '새 발판을 놓치지 않는 것'이 중요했습니다.", "verbatim": true},
           {
             "label": "결정 3",
-            "text": "돌아보면 이 선택 덕분에, 2주 뒤에 만든 레이저 퍼즐(07.07)이 추가 코드 없이 Shift 규칙을 따랐습니다.",
+            "text": "첫 구현(06.25)부터 콜라이더를 껐고, 덕분에 2주 뒤 만든 레이저 퍼즐(07.07)이 추가 코드 없이 Shift 규칙을 따랐습니다.",
             "verbatim": true
           }
         ],
@@ -654,9 +672,9 @@
         "lead": null,
         "sectionPath": ["4. 스테이지 기믹과 퍼즐", "4.3 핵심 동작"],
         "points": [
-          {"label": "", "text": "`Vector2.Reflect(입사 방향, 면의 법선)`이라 거울 각도를 따로 저장하지 않습니다.", "verbatim": true},
-          {"label": "", "text": "맞은 점에서 그대로 다시 쏘면 방금 맞은 면을 또 맞힙니다. 진행 방향으로 조금 띄워 출발합니다.", "verbatim": true},
-          {"label": "", "text": "다른 색 발판은 콜라이더가 꺼져 있으므로 레이캐스트에 맞지 않습니다. 그래서 Shift가 빛의 길을 바꿉니다", "verbatim": true}
+          {"label": "", "text": "`Vector2.Reflect`라 거울 각도를 저장하지 않고, 거울을 돌리면 반사각도 따라 바뀝니다.", "verbatim": true},
+          {"label": "", "text": "맞은 점에서 그대로 쏘면 방금 맞은 면(플레이어 몸, 거울)을 또 맞힙니다.", "verbatim": true},
+          {"label": "", "text": "다른 색 발판은 콜라이더가 꺼져 있어 레이캐스트에 맞지 않습니다. Shift가 빛의 길을 바꾸는 이유입니다", "verbatim": true}
         ],
         "visuals": [
           {
@@ -678,10 +696,14 @@
         "points": [
           {
             "label": "",
-            "text": "그래서 벽과 플레이어의 겹침(bounds)을 직접 검사하고, 벽이 움직인 만큼(`wallDelta`)을 `AddExternalMovement`로 더합니다.",
+            "text": "그래서 겹침(bounds)을 직접 검사하고 벽이 움직인 만큼(`wallDelta`)을 `AddExternalMovement`로 넘깁니다.",
             "verbatim": true
           },
-          {"label": "", "text": "벽(초당 10)이 플레이어(초당 8)보다 빨라 다른 색 벽에서 달아날 수 없습니다.", "verbatim": true}
+          {
+            "label": "",
+            "text": "벽(초당 10)이 플레이어(초당 8)보다 빨라 달아날 수 없지만, Shift 쿨타임(1초)이 벽 간격(1.2초)보다 짧아 벽이 올 때마다 색을 맞출 수 있습니다.",
+            "verbatim": true
+          }
         ],
         "visuals": [
           {
@@ -726,15 +748,29 @@
         "visuals": [{"kind": "mermaid", "n": 1, "fp": "stateDiagram-v2"}]
       },
       {
+        "key": "boss-timeline",
+        "chapter": "boss",
+        "layout": "full",
+        "tab": "흐름",
+        "title": {"text": "5.1 문제와 구조", "verbatim": true},
+        "lead": {
+          "text": "빨간 ①②③이 약점이 열리는 그로기(각 5초)입니다. 패턴이 30초씩 이어지는 동안 그로기는 5초뿐이라, 한 번 놓치면 다음 기회까지 40초를 기다려야 합니다.",
+          "verbatim": true
+        },
+        "sectionPath": ["5. 보스전", "5.1 문제와 구조"],
+        "points": [],
+        "visuals": [{"kind": "mermaid", "n": 2, "fp": "gantt"}]
+      },
+      {
         "key": "boss-patterns",
         "chapter": "boss",
         "layout": "full",
         "tab": "결과",
         "title": {"text": "5.1 문제와 구조", "verbatim": true},
-        "lead": {"text": "탄마다 흰색 또는 검은색이 섞여 날아오므로, 한 색으로 버티는 대신 다가오는 탄과 다른 색이 되도록 Shift 시점을 골라야 합니다.", "verbatim": true},
+        "lead": {"text": "탄마다 흰색·검은색이 섞여 오므로, 다가오는 탄과 다른 색이 되도록 Shift 시점을 골라야 합니다", "verbatim": true},
         "sectionPath": ["5. 보스전", "5.1 문제와 구조"],
         "points": [],
-        "visuals": [{"kind": "table", "n": 3, "fp": "운석|난사|레이저"}]
+        "visuals": [{"kind": "table", "n": 2, "fp": "운석|난사|레이저"}]
       },
       {
         "key": "boss-pattern-change",
@@ -813,13 +849,13 @@
             "text": "크러셔 벽에 콜라이더를 켜 두면 벽이 플레이어와 겹치는 순간 플레이어가 얼어붙었고, 보스전 랜덤 발판이 플레이어 위치에 생기면 빠져나올 수 없었습니다.",
             "verbatim": true
           },
-          {"label": "원인", "text": "겹친 상태에서는 모든 방향이 거리 0으로 막힙니다. 키네마틱 이동에는 겹침을 풀어 주는 처리가 없습니다.", "verbatim": true},
+          {"label": "원인", "text": "겹친 상태에서는 모든 방향이 거리 0으로 막힙니다. 키네마틱 이동에는 겹침을 풀어 주는 처리가 없습니다", "verbatim": true},
           {"label": "해결", "text": "크러셔 벽은 콜라이더를 끄고 겹침을 직접 검사해 벽 이동량만큼 플레이어를 옮겼습니다", "verbatim": true},
           {"label": "해결", "text": "랜덤 발판은 생성 위치 검사 규칙을 만드는 대신 기능을 걷어냈습니다", "verbatim": true}
         ],
         "visuals": []
       }
     ],
-    "applied": "cc7edf5c6d6a9ae2"
+    "applied": "a4d36941536ff49a"
   }
 }

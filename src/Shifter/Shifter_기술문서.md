@@ -145,15 +145,14 @@ stateDiagram-v2
     Boss --> Menu: 격파 후 포탈에서 W
 ```
 
-- 포탈은 '다음 빌드 인덱스'로 이동하고 마지막 씬 다음은 0번(메뉴)이라, 보스방 포탈은 메뉴로 돌아갑니다.
-- 어느 스테이지든 HP가 0이 되면 게임오버 화면(RESTART: 지금 스테이지 처음부터 / MENU: 메뉴)이 뜨고 시간이 멈춥니다. Esc는 일시정지 화면(RESTART / MENU)을 엽니다.
-- 스테이지 사이에 이어지는 값은 없습니다. 씬을 열 때마다 HP 100, 속성 회색(Common)에서 시작합니다.
+- 포탈은 '다음 빌드 인덱스'로 이동하고, 마지막 씬 다음은 0번(메뉴)이라 보스방 포탈은 메뉴로 돌아갑니다.
+- 스테이지 사이에 이어지는 값은 없습니다. 씬을 열 때마다 HP 100, 회색(Common)에서 시작합니다.
 
 | 메뉴 | 게임오버 | 일시정지 |
 |---|---|---|
 | ![메뉴 화면](images/03_menu.png) | ![게임오버 화면](images/04_gameover.png) | ![일시정지 화면](images/05_pause.png) |
 
-*메뉴에는 조작법(HOW TO PLAY)과 START · Exit Game 버튼이 있습니다. HP가 0이 되면 게임오버 화면이 뜨고 시간이 멈추며, Esc는 일시정지 화면을 엽니다. 두 화면 모두 다시 시작하는 버튼과 메뉴로 돌아가는 버튼이 있습니다.*
+*메뉴에는 조작법(HOW TO PLAY)과 START · Exit Game 버튼이 있습니다. HP가 0이 되면 게임오버 화면이 뜨고 시간이 멈추며, Esc는 일시정지 화면을 엽니다. 두 화면 모두 지금 스테이지를 처음부터 다시 하는 버튼(RESTART · Restart)과 메뉴로 돌아가는 버튼(MENU · Main)이 있습니다.*
 
 ### 2.2 아키텍처
 
@@ -181,15 +180,15 @@ flowchart TB
     BS -->|"투사체 생성 · 정리"| HZ
 ```
 
-> 실선은 직접 호출, 점선은 값을 읽기만 하는 관계입니다. 플레이어의 속성(태그)을 **바꾸는** 곳은 `Shifter.ShiftTag()` 하나이고, 나머지는 모두 읽기만 합니다. 씬을 시작할 때 `Shifter`가 태그를 `Common`으로 초기화하는 것만 예외입니다. HP는 반대로, 화면이 읽어 가지 않고 `Shifter`가 HP 바와 게임오버 화면을 직접 갱신합니다. 클래스 단위의 흐름은 4.1, 5.1의 다이어그램에서 다룹니다.
+> 실선은 직접 호출, 점선은 값을 읽기만 하는 관계입니다. 플레이어의 속성(태그)을 **바꾸는** 곳은 `Shifter.ShiftTag()` 하나이고, 나머지는 모두 읽기만 합니다. 씬 시작 때의 `Common` 초기화만 예외입니다. HP는 반대로 `Shifter`가 HP 바와 게임오버 화면을 직접 갱신합니다.
 
 ### 2.3 설계 규칙
 
 구조 전체를 관통하는 규칙은 네 가지입니다. 각 장의 '고민과 선택'에서 이 규칙을 왜 정했는지 설명합니다.
 
-1. **속성은 태그 하나로 표현한다.** 플레이어·발판·탄환이 같은 문자열(`Common`/`White`/`Black`)을 태그로 갖고, 판정은 `CompareTag`로 "같은 색인가"만 묻는다. 시작할 때의 `Common` 초기화를 빼면, 속성을 바꾸는 곳은 `Shifter.ShiftTag()` 하나뿐이다. → [3장](#3-shift-속성-시스템)
+1. **속성은 태그 하나로 표현한다.** 플레이어·발판·탄환이 같은 문자열(`Common`/`White`/`Black`)을 태그로 갖고, 판정은 `CompareTag`로 "같은 색인가"만 묻는다. → [3장](#3-shift-속성-시스템)
 2. **같은 색이면 실체, 다른 색이면 허상.** 발판은 같은 색일 때 밟히고, 탄환은 같은 색일 때 맞는다. STAGE 2의 크러셔 벽만 의도적으로 반대다. → [3.1](#31-문제와-구조)
-3. **플레이어를 옮기는 길은 `CharacterController2D` 하나.** 플레이어는 물리 엔진에 밀리지 않는다. 입력은 `SetMoveInput`, 외부에서 미는 양은 `AddExternalMovement`로만 넣고, 실제 이동은 모두 BoxCast 검사를 거친다. → [4.4](#44-고민과-선택)
+3. **플레이어를 옮기는 길은 `CharacterController2D` 하나.** 플레이어는 물리 엔진에 밀리지 않는다. 입력은 `SetMoveInput`, 외부에서 미는 양은 `AddExternalMovement`로만 넣고, 실제 이동은 모두 BoxCast 검사를 거친다. → [4.4](#44-고민과-선택), [6장 ②](#6-기타-구현)
 4. **패턴은 자기가 만든 것을 스스로 치운다.** 보스 패턴은 `StartPattern`/`EndPattern`만 드러내고, `EndPattern`에서 자기 코루틴과 투사체를 모두 정리한다. → [5장](#5-보스전)
 
 ### 2.4 핵심 클래스 역할
@@ -255,8 +254,8 @@ stateDiagram-v2
     B --> W: Shift
 ```
 
-- **회색(Common)은 출발 상태입니다.** 흰·검 발판을 모두 밟을 수 없지만 흰·검 탄환에도 맞지 않습니다. 첫 Shift 뒤에는 흰 ↔ 검만 오가고 회색으로 돌아오지 않습니다. '안전하지만 멀리 갈 수 없는' 상태에서 출발해, 앞으로 나아가려면 색을 골라야 합니다.
-- **크러셔 벽은 규칙을 뒤집었습니다.** 발판에서 익힌 "같은 색 = 단단함"과 반대로, 벽은 같은 색일 때 통과하고 다른 색일 때 밀어냅니다. STAGE 2 마지막 구간에서 익숙한 규칙을 거꾸로 쓰게 하는 변주입니다.
+- **회색(Common)은 출발 상태입니다.** 흰·검 발판을 밟을 수 없는 대신 흰·검 탄환에도 맞지 않습니다. '안전하지만 멀리 갈 수 없는' 상태에서 출발해, 나아가려면 색을 골라야 합니다.
+- **크러셔 벽은 규칙을 뒤집었습니다.** 발판에서 익힌 "같은 색 = 단단함"을 STAGE 2 마지막 구간에서 거꾸로 쓰게 하는 변주입니다.
 
 ![같은 장소에서 흰색일 때와 검은색일 때 비교](images/06_shift_compare.png)
 
@@ -331,8 +330,8 @@ public void ShiftTag()
 }
 ```
 
-- 회색에서 Shift하면 `CompareTag(White)`가 거짓이라 흰색이 됩니다. 이후로는 흰 ↔ 검만 오가므로 회색으로 돌아오는 길이 코드에 없습니다.
-- 속성을 바꾸는 코드는 `ShiftTag()`의 두 줄이 전부입니다. 발판·탄환·UI는 이 태그를 읽기만 합니다.
+- 회색에서 Shift하면 `CompareTag(White)`가 거짓이라 흰색이 되고, 회색으로 돌아오는 분기는 없습니다.
+- 쿨타임은 입력 쪽(`ShifterController`)이 지키고 `Shifter`는 태그만 바꿔, 속성을 바꾸는 코드가 두 줄로 끝납니다.
 
 **② 발판: 태그로 모으고, 콜라이더째 끈다**
 
@@ -378,9 +377,8 @@ private void ColliderControll()
 }
 ```
 
-- **무엇을 관리할지는 태그로 정합니다.** `Common`·`White`·`Black`·`Red` 태그를 가진 오브젝트를 모으고, 이동하는 투사체(`Rigidbody2D` 보유)는 건너뜁니다. 매 프레임 다시 찾는 이유는 [3.4 결정 2](#34-고민과-선택)에서 다룹니다.
 - **다른 색 발판은 콜라이더 자체를 끕니다.** 그래서 플레이어의 이동 판정(BoxCast)뿐 아니라 레이저 퍼즐의 레이캐스트도 그 발판을 지나갑니다. Shift가 빛의 길까지 바꾸는 이유입니다 ([4.3 ①](#43-핵심-동작)).
-- 투명도는 같은 목록을 돌며 '플레이어와 반대 색'인 발판만 α 0.5로 낮춥니다(`AlphaControll`). 회색 상태에서는 반대 색이 없으므로 아무것도 흐려지지 않습니다.
+- 매 프레임 태그로 다시 모으는 이유와 그 비용은 [3.4 결정 2](#34-고민과-선택)에서 다룹니다. 투명도(`AlphaControll`)는 같은 목록에서 플레이어와 반대 색인 발판만 α 0.5로 낮춥니다.
 
 **③ 탄환: 같은 색일 때만 맞는다**
 
@@ -404,7 +402,7 @@ private void OnTriggerEnter2D(Collider2D collision)
 ```
 
 - 흰·검 발판은 탄환을 막지 않습니다. 보스 탄을 막는 것은 회색 지형뿐이라, 발판 뒤에 숨는 대신 **색을 바꿔 몸으로 흘려보내는** 것이 핵심 회피 수단입니다.
-- STAGE 1의 총알(`Bullet`)도 같은 규칙(`collision.CompareTag(gameObject.tag)`)으로 판정합니다. 다만 총알 프리팹의 콜라이더가 트리거가 아니라, 현재는 이 판정 자체가 불리지 않아 총알에 맞지 않습니다. 테스트로 찾았고 아직 고치지 않았습니다([7.3 ①](#73-아쉬운-점과-향후-계획)).
+- STAGE 1의 총알(`Bullet`)도 같은 규칙으로 판정하지만, 총알 프리팹의 콜라이더가 트리거가 아니라 지금은 이 판정이 불리지 않습니다. 테스트로 찾았고 아직 고치지 않았습니다([7.3 ①](#73-아쉬운-점과-향후-계획)).
 
 **④ 속성 UI: 바뀐 프레임에만 교체한다**
 
@@ -474,7 +472,7 @@ private void Update()
 > - 장점: 발판을 건드리지 않고 플레이어 값 하나만 바꾼다.
 > - 단점: 플레이어 이동에만 적용된다. 다른 시스템은 여전히 다른 색 발판에 막히므로, 같은 규칙을 시스템마다 다시 구현해야 한다.
 >
-> **[결정] 대안 A.** 첫 구현(06.25)부터 콜라이더를 껐습니다. 돌아보면 이 선택 덕분에, 2주 뒤에 만든 레이저 퍼즐(07.07)이 **추가 코드 없이** Shift 규칙을 따랐습니다. 다른 색 발판에서는 빛도 지나가므로, 조준 중에 Shift해 빛의 길을 여닫는 기믹이 저절로 생겼습니다. 대안 B였다면 레이저에 같은 규칙을 한 번 더 구현해야 했습니다. 대가도 함께 왔습니다. 규칙이 레이저에 '저절로' 적용되다 보니, 흰색이 되면 검은 발판이 꺼져 거울 없이 직선 한 번으로 풀리는 지름길까지 생겼습니다([7.3 ①](#73-아쉬운-점과-향후-계획)). 규칙을 모든 시스템에 공유하면 레벨을 배치할 때 그 규칙이 만드는 경로까지 함께 검사해야 합니다.
+> **[결정] 대안 A.** 첫 구현(06.25)부터 콜라이더를 껐고, 덕분에 2주 뒤 만든 레이저 퍼즐(07.07)이 **추가 코드 없이** Shift 규칙을 따랐습니다. 조준 중에 Shift해 빛의 길을 여닫는 기믹이 저절로 생긴 것입니다. 대안 B였다면 레이저에 같은 규칙을 한 번 더 구현해야 했습니다. 대가도 함께 왔습니다. 흰색이 되면 검은 발판이 꺼져, 거울 없이 직선 한 번으로 풀리는 지름길까지 생겼습니다([7.3 ①](#73-아쉬운-점과-향후-계획)). 규칙을 모든 시스템이 공유하면, 레벨을 배치할 때 그 규칙이 만드는 경로까지 검사해야 합니다.
 
 ---
 
@@ -492,8 +490,8 @@ private void Update()
 
 | 스테이지 | 기믹 | 동작 | Shift와의 관계 | 클래스 |
 |---|---|---|---|---|
-| 1 · 2 · 보스 | 레드 타일 | 닿아 있는 동안 0.5초마다 HP −5 (보스방은 1초마다 −10). 현재 STAGE 2의 레드 타일은 판정 설정 누락으로 피해가 없다 ([7.3 ①](#73-아쉬운-점과-향후-계획)) | 색과 무관하게 항상 단단하고 항상 아프다 | `Red` |
-| 1 | 총알 발사기 ×4 | 1초마다 아래에서 위로 흰/검 무작위 총알 (피해 5, 속도 7.5). 현재는 판정 버그로 맞지 않는다 ([7.3 ①](#73-아쉬운-점과-향후-계획)) | 총알과 다른 색이면 통과 | `BulletLauncher`, `Bullet` |
+| 1 · 2 · 보스 | 레드 타일 | 닿아 있는 동안 0.5초마다 HP −5 (보스방은 1초마다 −10). STAGE 2는 현재 피해 없음 ([7.3 ①](#73-아쉬운-점과-향후-계획)) | 색과 무관하게 항상 단단하고 항상 아프다 | `Red` |
+| 1 | 총알 발사기 ×4 | 1초마다 아래에서 위로 흰/검 무작위 총알 (피해 5, 속도 7.5). 현재 맞지 않음 ([7.3 ①](#73-아쉬운-점과-향후-계획)) | 총알과 다른 색이면 통과 | `BulletLauncher`, `Bullet` |
 | 1 | 박스 운반 | 박스를 밀어 골 지점에 넣으면 문 1이 열린다 | — | `BoxGoal` |
 | 1 | 전구 퍼즐 | 버튼 5개가 각자 이웃 전구를 토글하고, 전구 5개가 모두 초록이면 문 2가 열린다 | — | `ButtontoLight`, `ButtonReset` |
 | 2 | 이동 발판 ×3 | 위아래 ±2유닛 왕복 | — | `MovingPlatform` |
@@ -512,7 +510,7 @@ private void Update()
 |---|---|
 | ![레이저 조준 모드](images/09_stage2_laser.png) | ![크러셔 벽](images/10_stage2_crusher.png) |
 
-*STAGE 2 (둘 다 검은색 상태). 레이저는 흰 막대 거울 3개에서 꺾여 오른쪽 센서에 닿고, 가운데 회색 기둥(흰 발판)은 반투명해져 빛이 그대로 지나갑니다. 크러셔 벽은 같은 색인 검은 벽은 몸을 지나가고, 다른 색인 흰 벽은 반투명하게 다가와 플레이어를 밀어냅니다.*
+*STAGE 2 (둘 다 검은색 상태). 레이저는 흰 막대 거울 3개에서 꺾여 오른쪽 센서에 닿고, 가운데 회색 기둥(흰 발판)은 반투명해져 빛이 그대로 지나갑니다. 크러셔 벽은 검은 벽이 몸을 지나가고, 반투명한 흰 벽이 플레이어를 밀어냅니다.*
 
 레이저 퍼즐은 버튼 하나에서 시작해 여러 클래스를 거칩니다.
 
@@ -558,7 +556,40 @@ public class PressureButton : MonoBehaviour
 }
 ```
 
-STAGE 2에서는 `onPressed`에 `LaserPuzzleManager.EnterAimMode`가 연결되어 있습니다.
+STAGE 2에서는 `onPressed`에 `LaserPuzzleManager.EnterAimMode`가 연결되어 있습니다. 조준 모드는 들어가는 함수 하나와, 센서가 풀렸는지 보는 `Update` 하나로 끝납니다.
+
+```csharp
+// LaserPuzzleManager.cs — 버튼이 부르는 진입점. 끝나는 조건은 '센서가 풀렸는가' 하나뿐
+public void EnterAimMode()
+{
+    if (isAiming || lightSensor.IsSolved) return;          // 조준 중이거나 이미 풀렸으면 무시
+    isAiming = true;
+
+    mainCamera.gameObject.SetActive(false);                 // 퍼즐 전체가 보이는 카메라로
+    puzzleCamera.gameObject.SetActive(true);
+
+    shifterController.SetMovementLocked(true);              // 이동만 잠근다. Shift는 그대로 받는다
+    lightBeam.IsAiming = true;
+}
+
+private void Update()
+{
+    if (!isAiming) return;
+    if (lightSensor.IsSolved) ExitAimMode();                // 진입의 반대 순서로 카메라 · 이동을 되돌린다
+}
+
+// LightSensor.cs — LightBeam이 조준 중 매 프레임 결과를 알려 준다
+public void UpdateBeam(bool beamHit)
+{
+    if (IsSolved) return;                                   // 한 번 풀리면 빛이 벗어나도 문은 열려 있다
+    if (!beamHit) return;
+
+    IsSolved = true;
+    door1.SetActive(false);
+}
+```
+
+조준 모드를 빠져나가는 버튼은 따로 두지 않았습니다. 그 대가는 [4.3](#43-핵심-동작)의 예외 상황 표에 적었습니다.
 
 **거울 추가하기.** 콜라이더가 있는 오브젝트에 빈 컴포넌트 `Mirror`를 붙이면 반사면이 됩니다. 반사각은 맞은 면의 법선으로 계산하므로 거울마다 설정할 값이 없습니다.
 
@@ -626,11 +657,12 @@ private void FireBeam()
 }
 ```
 
-1. **두 가지 상한.** `bounces`는 거울 반사만 셉니다. 플레이어·트리거를 통과할 때는 늘지 않으므로, 이것만으로는 반복이 끝난다는 보장이 없습니다. 그래서 모든 반복을 세는 `safety`를 따로 둡니다.
-2. **다시 쏠 때는 0.05 앞에서.** 맞은 점에서 그대로 다시 쏘면 방금 맞은 면을 또 맞힙니다. 진행 방향으로 조금 띄워 출발합니다.
-3. **반사는 법선 하나로.** `Vector2.Reflect(입사 방향, 면의 법선)`이라 거울 각도를 따로 저장하지 않습니다. 거울을 회전시키면 반사각도 따라 바뀝니다.
-4. **선은 구간마다 하나, 재사용.** `LineRenderer`를 구간 수만큼만 만들어 두고 다음 프레임에 다시 씁니다. 반사가 줄어 남는 선은 끕니다.
-5. **다른 색 발판은 콜라이더가 꺼져 있으므로** 레이캐스트에 맞지 않습니다. 그래서 Shift가 빛의 길을 바꿉니다 ([3.4 결정 3](#34-고민과-선택)).
+1. **두 가지 상한.** `bounces`는 거울 반사만 세므로, 플레이어·트리거를 통과하는 반복까지 세는 `safety`를 따로 둡니다.
+2. **다시 쏠 때는 0.05 앞에서.** 맞은 점에서 그대로 쏘면 방금 맞은 면(플레이어 몸, 거울)을 또 맞힙니다.
+3. **반사는 법선 하나로.** `Vector2.Reflect`라 거울 각도를 저장하지 않고, 거울을 돌리면 반사각도 따라 바뀝니다.
+4. **선은 구간마다 하나를 재사용.** 반사가 줄어 남는 `LineRenderer`는 끕니다.
+
+다른 색 발판은 콜라이더가 꺼져 있어 레이캐스트에 맞지 않습니다. Shift가 빛의 길을 바꾸는 이유입니다 ([3.4 결정 3](#34-고민과-선택)).
 
 **② 크러셔 벽: 콜라이더 없이 민다**
 
@@ -688,15 +720,43 @@ private void SpawnWall()
 }
 ```
 
-- **콜라이더를 끄는 이유.** 플레이어 이동은 Tile 레이어를 향한 BoxCast로 판정합니다. 벽 콜라이더가 켜진 채 플레이어와 겹치면 BoxCast가 출발 지점부터 막혀 플레이어가 벽 속에 얼어붙습니다. 그래서 벽과 플레이어의 겹침(bounds)을 직접 검사하고, 벽이 움직인 만큼(`wallDelta`)을 `AddExternalMovement`로 더합니다. 이 이동량도 다음 물리 프레임에 BoxCast 검사를 거치므로, 밀려난 플레이어가 다른 지형을 뚫지는 않습니다.
-- **`Rigidbody2D`를 붙이는 이유.** 벽은 흰·검 태그 프리팹을 재사용하므로, 그대로 두면 `PlatformManager`가 태그를 보고 콜라이더를 다시 켭니다. `PlatformManager`가 `Rigidbody2D`를 가진 오브젝트를 건너뛰는 점을 이용해 관리 대상에서 뺐습니다.
-- **수치의 관계.** 벽(초당 10)이 플레이어(초당 8)보다 빨라 다른 색 벽에서 달아날 수 없습니다. 대신 Shift 쿨타임(1초)이 벽 간격(1.2초)보다 짧아, 벽이 올 때마다 색을 맞출 수 있습니다.
+- **콜라이더를 끄는 이유.** 벽 콜라이더가 켜진 채 플레이어와 겹치면, 플레이어의 BoxCast가 출발 지점부터 막혀 벽 속에 얼어붙습니다([7.2 ②](#72-문제-해결-경험)). 그래서 겹침(bounds)을 직접 검사하고 벽이 움직인 만큼(`wallDelta`)을 `AddExternalMovement`로 넘깁니다. 이 이동량도 `CharacterController2D`의 BoxCast 검사를 거치므로([6장 ②](#6-기타-구현)), 밀려난 플레이어가 다른 지형을 뚫지 않습니다.
+- **`Rigidbody2D`를 붙이는 이유.** 벽은 흰·검 태그 프리팹을 재사용하므로, 그대로 두면 `PlatformManager`가 태그를 보고 콜라이더를 다시 켭니다.
+- **수치의 관계.** 벽(초당 10)이 플레이어(초당 8)보다 빨라 달아날 수 없지만, Shift 쿨타임(1초)이 벽 간격(1.2초)보다 짧아 벽이 올 때마다 색을 맞출 수 있습니다.
 
 <!-- ✍️ 코드 기본값과 실제 값이 다릅니다: 크러셔 벽 속도 3 → 10 · 간격 0.7 → 1.2(STAGE 2 씬), Shift 쿨타임 2 → 1(Shifter 프리팹). 플레이해 보고 바꾼 값이라면 무엇을 보고 바꿨는지 한 줄씩 덧붙이면 가이드의 '해 보고 바꾼 것'이 됩니다 -->
 
 **③ 전구 퍼즐: 버튼이 이웃 전구까지 바꾼다**
 
-버튼을 밟으면 그 버튼에 연결된 전구가 초록 ↔ 흰색으로 바뀝니다(`ButtontoLight`). 버튼 하나가 이웃 전구까지 함께 바꾸기 때문에, 하나씩 맞춰 나가다 보면 이미 켠 전구가 다시 꺼지기도 합니다. 전구 5개가 모두 초록이 되면 문 2가 열리고, 꼬였을 때는 리셋 버튼으로 전구를 모두 흰색으로 되돌려 처음부터 다시 풉니다(`ButtonReset`).
+```csharp
+// ButtontoLight.cs — 버튼에 연결된 전구들(이웃 포함)을 초록 ↔ 흰색으로 뒤집는다
+private void OnTriggerEnter2D(Collider2D collision)
+{
+    for (int i = 0; i < LightColor.Length; i++)
+    {
+        if (LightColor[i] == null) continue;
+        LightColor[i].color = (LightColor[i].color == Color.green) ? Color.white : Color.green;
+    }
+}
+
+// ButtonReset.cs (발췌) — 리셋 버튼. 문 2가 닫혀 있는 동안 매 프레임 초록 전구 수를 센다
+private void Update()
+{
+    if (Door2.activeSelf) CheckAllGreen();
+}
+
+private void CheckAllGreen()
+{
+    int countGreen = 0;
+    for (int i = 0; i < LightColor.Length; i++)
+    {
+        if (LightColor[i].color == Color.green) countGreen++;
+    }
+    if (AllGreen == countGreen) Door2.SetActive(false);    // 전구 5개가 모두 초록이면 문 2를 연다
+}
+```
+
+버튼 하나가 이웃 전구까지 뒤집기 때문에, 하나씩 맞춰 나가면 이미 켠 전구가 다시 꺼집니다. 꼬이면 리셋 버튼을 밟아 전구를 모두 흰색으로 되돌립니다(`ResetLights`). 퍼즐의 상태를 따로 두지 않고 **스프라이트 색으로 판정**한 것은 지금 보면 아쉬운 선택입니다([7.3 ②](#73-아쉬운-점과-향후-계획)).
 
 **예외 상황 처리**
 
@@ -705,7 +765,7 @@ private void SpawnWall()
 | 이미 풀린 레이저 퍼즐의 버튼을 다시 밟음 | 무시 (`isAiming` 또는 `IsSolved`) |
 | 빛이 센서에서 벗어남 | 한 번 맞으면 `IsSolved`가 유지되어 문은 계속 열려 있다 |
 | 조준 중 이동 입력 | `SetMovementLocked`로 막고 이동 애니메이션 값을 0으로. Shift는 허용 |
-| 조준 모드를 풀지 않고 나가려 함 | **처리 없음.** 조준 모드는 센서가 풀릴 때만 끝나, 그때까지 이동이 잠긴다. 빠져나가는 길은 Esc → RESTART / MENU뿐이다. 지금은 흰색 직선 경로([7.3 ①](#73-아쉬운-점과-향후-계획))가 있어 풀지 못해 갇히는 일은 없다 |
+| 조준 모드를 풀지 않고 나가려 함 | **처리 없음.** 센서가 풀릴 때까지 이동이 잠기고, 빠져나가는 길은 Esc → Restart · Main뿐이다. 지금은 흰색 직선 경로([7.3 ①](#73-아쉬운-점과-향후-계획))가 있어 실제로 갇히지는 않는다 |
 | 반사가 끝없이 이어짐 | 반사 6회 · 반복 11회에서 끊는다 |
 | 크러셔 벽이 목표 지점에 도착 | 0.05 이내면 파괴하고 목록에서 뺀다 (뒤에서부터 순회) |
 | 전구 퍼즐이 꼬임 | 리셋 버튼으로 전구 5개를 모두 흰색으로 |
@@ -716,7 +776,7 @@ private void SpawnWall()
 
 > **[대안 A] 벽 콜라이더를 켜고 이동 판정에 맡긴다**
 > - 장점: 추가 코드가 없다. 플레이어가 벽을 향해 걸으면 BoxCast가 막는다.
-> - 단점: 벽이 플레이어 쪽으로 움직여 겹치는 순간, BoxCast가 겹친 상태에서 출발해 모든 방향이 막힌다. 키네마틱 이동에는 겹침을 풀어 주는 처리가 없어 플레이어가 벽 속에 얼어붙는다.
+> - 단점: 벽이 움직여 플레이어와 겹치는 순간 BoxCast가 모든 방향에서 막혀, 플레이어가 벽 속에 얼어붙는다([7.2 ②](#72-문제-해결-경험)).
 >
 > **[대안 B] 벽을 Dynamic 물체로 두고 물리로 민다**
 > - 장점: 밀어내기를 물리 엔진이 한다.
@@ -780,11 +840,7 @@ stateDiagram-v2
     Dead --> [*]: 보스 비활성
 ```
 
-| 구간 | 0\~10초 | 10\~40초 | 40\~45초 | 45\~55초 | 55\~85초 | 85\~90초 | 90\~130초 | 130\~135초 |
-|---|---|---|---|---|---|---|---|---|
-| 보스 | 대기 | 패턴 ×3 | **그로기 ①** | 대기 | 패턴 ×3 | **그로기 ②** | 대기 · 패턴 ×3 | **그로기 ③** |
-
-한 주기는 45초(대기 10 + 패턴 30 + 그로기 5)입니다. 약점은 밟는 즉시 꺼져 그로기 한 번에 한 번만 맞힐 수 있으므로, **가장 빠른 격파는 세 번째 그로기가 시작되는 약 130초(2:10)** 입니다. 보스 타이머 UI는 입장부터 격파까지를 잽니다.
+한 주기는 45초(대기 10 + 패턴 30 + 그로기 5)입니다. 약점은 밟는 즉시 꺼져 그로기 한 번에 한 번만 맞힐 수 있으므로, **가장 빠른 격파는 세 번째 그로기가 시작되는 약 130초(2:10)** 입니다.
 
 ```mermaid
 %%{init: {"gantt": {"displayMode": "compact", "useWidth": 760}}}%%
@@ -808,13 +864,13 @@ gantt
     ③ : crit, g3, 130, 5s
 ```
 
-*위 구간을 시간 축에 그린 그림. 빨간 ①②③이 약점이 열리는 그로기(각 5초)이고, ③이 시작되는 02:10이 가장 빠른 격파 시점입니다. 패턴이 30초씩 이어지는 동안 그로기는 5초뿐이라, 한 번 놓치면 다음 기회까지 40초를 기다려야 합니다.*
+*빨간 ①②③이 약점이 열리는 그로기(각 5초)입니다. 패턴이 30초씩 이어지는 동안 그로기는 5초뿐이라, 한 번 놓치면 다음 기회까지 40초를 기다려야 합니다. 보스 타이머 UI는 입장부터 격파까지를 잽니다.*
 
 | 패턴 | 공격 | 피해 | 실행 시간 | 애니메이션 |
 |---|---|---|---|---|
 | Eruption (운석) | 보스 위 10유닛, 좌우 ±8 범위의 무작위 위치에서 운석이 떨어진다(중력 2배). 15개를 1초 간격으로 만들지만 10초 뒤 다음 패턴이 끊어 실제로는 약 10개 | 10 | 10초 (잘림) | `Atk1` |
 | Rampage (난사) | 보스 중심에서 8방향 동시 발사를 1.5초 간격으로 5번 (40발), 속도 10 | 6 | 6초 | `Atk2` |
-| Razer (레이저) | 플레이어 방향 ±15° 안의 무작위 각도로 6\~12발, 0.7초 간격, 속도 9. 현재는 판정 박스가 너무 커서 쏘자마자 지형에 닿아 사라진다 ([7.3 ①](#73-아쉬운-점과-향후-계획)) | 8 | 3.5\~7.7초 | `Atk3` |
+| Razer (레이저) | 플레이어 방향 ±15° 안의 무작위 각도로 6\~12발, 0.7초 간격, 속도 9. 현재 쏘자마자 사라짐 ([7.3 ①](#73-아쉬운-점과-향후-계획)) | 8 | 3.5\~7.7초 | `Atk3` |
 
 - 공통: 투사체마다 흰/검 무작위 · 같은 색이면 피격 · 회색 지형에 닿으면 소멸 · 10초 뒤 자동 소멸 · 패턴이 끝나면 남은 것 일괄 제거.
 - 수치는 `Agis` 프리팹 값에 STAGE BOSS 씬의 오버라이드(운석 개수·간격, 난사 횟수, 레이저 개수·간격·속도)를 반영한 실제 값입니다.
@@ -825,7 +881,7 @@ gantt
 |---|---|---|
 | ![운석 패턴](images/11_boss_eruption.png) | ![난사 패턴](images/12_boss_rampage.png) | ![레이저 패턴](images/13_boss_razer.png) |
 
-*패턴 3종(오른쪽 위 타이머는 보스방 입장부터 잰 실제 진행 시간). 탄마다 흰색 또는 검은색이 섞여 날아오므로, 한 색으로 버티는 대신 다가오는 탄과 **다른 색**이 되도록 Shift 시점을 골라야 합니다. 흰 탄은 스프라이트 원색 때문에 노란빛으로 보입니다. **운석**: 흰 운석이 흰색 플레이어 머리 위로 떨어지는 장면입니다. **난사**: 8방향 펄스가 퍼지는 장면입니다. **레이저**: 쏘자마자 사라지는 버그([7.3](#73-아쉬운-점과-향후-계획)) 때문에 발사 직후 프레임을 골랐습니다.*
+*패턴 3종(오른쪽 위는 보스방 입장부터 잰 시간). 탄마다 흰색·검은색이 섞여 오므로, 다가오는 탄과 **다른 색**이 되도록 Shift 시점을 골라야 합니다(흰 탄은 스프라이트 원색 때문에 노란빛). 레이저는 쏘자마자 사라지는 버그([7.3](#73-아쉬운-점과-향후-계획)) 때문에 발사 직후 프레임입니다.*
 
 ```mermaid
 classDiagram
@@ -869,13 +925,7 @@ classDiagram
     BossHeart --> BossManager : DamageToBoss()
 ```
 
-| 클래스 | 갖는 것 | 하는 일 | 하지 않는 일 |
-|---|---|---|---|
-| `BossManager` | 패턴 타이머, 실행 횟수, 지금 패턴 | 10초마다 이전 패턴 정리 → 무작위 패턴 시작, 3회 뒤 그로기, 사망 연출 | 패턴 내용, 투사체 |
-| 패턴 3종 (`IBossPattern`) | 자기가 만든 투사체 목록 | 코루틴으로 공격, `EndPattern`에서 코루틴 중지와 투사체 제거 | 다음 패턴 고르기 |
-| `BossProjectile` | 방향·속도·피해·속성 | 이동, 10초 수명, 같은 색 피격, 회색 지형에 소멸 | |
-| `BossHeart` | | 위에서 밟히면 보스 체력 −1, 자신은 꺼짐 | 그로기 시간 |
-| `Boss` | 남은 체력(3) | | |
+> `BossManager`가 패턴에 대해 아는 것은 `IBossPattern`의 두 함수뿐이고, 투사체는 패턴이 만들고 패턴이 지웁니다. 클래스별 책임은 [2.4](#24-핵심-클래스-역할)의 보스 행과 같습니다.
 
 ### 5.2 사용법
 
@@ -886,7 +936,7 @@ classDiagram
 1. `IBossPattern`을 구현한 컴포넌트를 보스 오브젝트에 붙인다.
 2. `StartPattern`에서 코루틴을 시작하고, 만든 투사체는 목록에 담는다.
 3. `EndPattern`에서 `StopAllCoroutines()` 후 목록의 투사체를 파괴한다.
-4. `BossManager`에 필드, `switch` 분기, 애니메이션 트리거를 추가한다. (4는 현재 구조의 한계 → [7.3](#73-아쉬운-점과-향후-계획))
+4. `BossManager`에 필드, `switch` 분기, 애니메이션 트리거를 추가하고 `Random.Range(0, 3)`의 상한을 늘린다. (4는 현재 구조의 한계 → [7.3](#73-아쉬운-점과-향후-계획))
 
 ```csharp
 // IBossPattern.cs — BossManager가 패턴에 대해 아는 것은 '시작'과 '정리'뿐
@@ -978,7 +1028,7 @@ private void ForceIdleAnimation()
 
 1. **정리는 패턴 스스로.** `BossManager`는 무엇이 남았는지 모르고 `EndPattern()`만 부릅니다. 운석이 15개 중 10개째를 만들던 중이어도 코루틴과 남은 운석이 함께 사라집니다.
 2. **3회 뒤 그로기.** 그로기 중에는 `Update`가 `PatternManager`를 부르지 않아 타이머가 0에 멈춰 있다가, 그로기가 끝나면 다시 10초를 셉니다. 5.1의 '대기 10초'가 이렇게 생깁니다.
-3. **트리거는 소비될 때까지 남는다.** 그로기 직전에 걸린 공격 트리거가 남아 있으면 Idle로 돌아오자마자 공격 모션이 재생됩니다. 공격 트리거 3개를 모두 지우고, 전환 조건(Exit Time)을 기다리지 않고 Idle 상태를 바로 재생합니다.
+3. **트리거는 소비될 때까지 남는다.** 그로기 직전에 걸린 공격 트리거가 남아 있으면 Idle로 돌아오자마자 공격 모션이 재생됩니다. 그래서 트리거 3개를 지우고, Exit Time을 기다리지 않고 Idle을 바로 재생합니다.
 
 **② 약점과 사망**
 
@@ -1019,6 +1069,40 @@ private IEnumerator PlayDeathAndDisappear()
 
 *첫 번째 그로기(입장 후 00:40). 패턴 3회가 끝나면 보스 가슴에 약점이 5초 동안 나타나고, 위에서 밟으면 보스 체력 바가 한 칸 줄고 플레이어 HP가 30 회복됩니다.*
 
+**③ 패턴 하나의 안쪽: 레이저는 플레이어를 노리되 흔든다**
+
+```csharp
+// BossPattern_Razer.cs — 발사 수를 정하고 간격마다 한 발씩. 방향은 '쏘는 순간의 플레이어 쪽 ± 15°'
+private IEnumerator FireLaserRoutine()
+{
+    int laserCount = Random.Range(minLaserCount, maxLaserCount + 1);   // int 버전은 최댓값을 빼므로 +1
+    for (int i = 0; i < laserCount; i++)
+    {
+        FireLaser();
+        yield return new WaitForSeconds(laserSpawnInterval);
+    }
+}
+
+private void FireLaser()
+{
+    if (laserProjectilePrefab == null) return;
+
+    Vector3 directionToPlayer = (shifter.transform.position - bossTransform.position).normalized;
+    float baseAngle = Mathf.Atan2(directionToPlayer.y, directionToPlayer.x) * Mathf.Rad2Deg;
+    float finalRadian = (baseAngle + Random.Range(-15f, 15f)) * Mathf.Deg2Rad;
+    Vector3 firingDirection = new Vector3(Mathf.Cos(finalRadian), Mathf.Sin(finalRadian), 0);
+
+    GameObject laser = Instantiate(laserProjectilePrefab, bossTransform.position, Quaternion.identity);
+    activeLasers.Add(laser);                                            // EndPattern이 지울 목록에 담는다
+
+    string attributeTag = BossAttributeUtil.RandShiftTag();
+    laser.GetComponent<BossProjectile>().Initialize(firingDirection, laserSpeed, laserDamage, attributeTag);
+}
+```
+
+- 방향은 발사하는 순간의 플레이어 위치로 정하므로, 연사 도중에 움직이면 레이저가 따라옵니다. 레이저마다 색도 무작위라 한 연사 안에 흰·검이 섞입니다.
+- 패턴 3종이 다른 것은 이 '어디로 몇 발을 쏘는가'뿐입니다(운석: 보스 위 무작위 위치에서 낙하, 난사: `360° / 8` 간격 동시 발사). 투사체를 목록에 담고 `EndPattern`에서 지우는 부분은 5.2의 난사 패턴과 똑같고, 이 반복이 [5.4 결정 1](#54-고민과-선택)의 대가입니다.
+
 **예외 상황 처리**
 
 | 상황 | 처리 |
@@ -1056,7 +1140,7 @@ private IEnumerator PlayDeathAndDisappear()
 > - 장점: 플레이어가 갇히는 상황이 원천적으로 사라진다. `PlatformManager`가 런타임 발판을 신경 쓸 이유도 사라진다.
 > - 단점: 보스전의 발판 Shift 요소가 줄고, 탄환 회피 중심이 된다.
 >
-> **[결정] 대안 B (07.10).** 발판이 좁은 영역에 겹쳐 생기거나, **흰·검 발판이 둘 다 플레이어 위치에 생기면 빠져나갈 방법이 없었습니다.** 플레이어의 BoxCast는 이미 겹쳐 있는 콜라이더를 거리 0으로 맞히므로 그 자리에서 움직일 수 없고, 어느 색으로 Shift해도 둘 중 하나는 켜져 있습니다. 플레이어가 실력으로 대응할 수 없는 실패가 무작위로 생기는 것은 공정하지 않다고 판단해, 위치 검사 규칙을 만드는 대신 기능을 걷어냈습니다.
+> **[결정] 대안 B (07.10).** 발판이 좁은 영역에 겹쳐 생기거나, **흰·검 발판이 둘 다 플레이어 위치에 생기면 빠져나갈 방법이 없었습니다.** 겹친 콜라이더 안에서는 움직일 수 없고([7.2 ②](#72-문제-해결-경험)), 어느 색으로 Shift해도 둘 중 하나는 켜져 있기 때문입니다. 실력으로 대응할 수 없는 실패가 무작위로 생기는 것은 공정하지 않다고 판단해, 위치 검사 규칙을 만드는 대신 기능을 걷어냈습니다.
 
 | | As-Is (07.06 \~ 07.09) | To-Be (07.10 \~) |
 |---|---|---|
@@ -1072,12 +1156,12 @@ private IEnumerator PlayDeathAndDisappear()
 
 | 기능 | 구현 요점 | 클래스 |
 |---|---|---|
-| 키네마틱 이동 | 공용 `CharacterController2D` 사용. 물리 프레임마다 가로·세로를 따로 BoxCast해 막힌 거리까지만 이동(skinWidth 0.01), 세로가 막히면 낙하 속도 0. 땅에 닿으면 점프 횟수 초기화(2단 점프). 수치: 속도 8, 중력 −24, 점프력 11 | `CharacterController2D` |
+| 키네마틱 이동 | 공용 `CharacterController2D`. 가로·세로를 따로 BoxCast해 막힌 거리까지만 이동(skinWidth 0.01). 속도 8, 중력 −24, 점프력 11, 2단 점프 (아래 ②) | `CharacterController2D` |
 | 박스 밀기 (추가 구현) | 가로 BoxCast에 맞은 대상이 Dynamic `Rigidbody2D`면 그 속도를 플레이어 속도로 덮어써 민다 (아래 ②) | `CharacterController2D`, 박스 |
 | 좌우 반전 | 루트의 `transform.localScale.x`를 ±1로 뒤집어 그림과 콜라이더가 함께 반전된다 ([7.2 ①](#72-문제-해결-경험)) | `ShifterController` |
 | 카메라 | 비대칭 데드존(좌우 ±4, 위 5, 아래 1) 밖으로 나갈 때만 목표를 옮기고, 카메라는 목표를 Lerp로 따라간다 (아래 ①) | `CameraController` |
-| 피해와 HP | 피해는 `ITakeDamage` 하나로 받는다. HP 프로퍼티가 0\~100으로 자르고 HP 바를 갱신, 0이면 게임오버 화면과 `timeScale` 0. 피격 시 0.1초 간격으로 빨간색 3번 점멸 | `Shifter`, `ITakeDamage` |
-| 레드 타일 | 부모 하나가 자식 타일 콜라이더 전체를 `IsTouching`으로 검사한다. 닿아 있는 동안 타이머를 쌓아 간격마다 피해, 떨어지면 타이머 초기화 | `Red` |
+| 피해와 HP | 피해는 `ITakeDamage` 하나로 받고, HP 프로퍼티 하나가 범위 · HP 바 · 게임오버를 처리한다 (아래 ③) | `Shifter`, `ITakeDamage` |
+| 레드 타일 | 부모 하나가 자식 타일 전체를 `IsTouching`으로 검사해 간격마다 피해 (아래 ④) | `Red` |
 | 총알 발사기 | `firePivot` → `endPivot` 방향으로 일정 간격 발사. 사거리 = 두 점 사이 거리라 레벨에서 끝점만 옮기면 된다 | `BulletLauncher`, `Bullet` |
 | 이동 발판 | `Mathf.PingPong`으로 시작 위치 기준 ±거리 왕복 | `MovingPlatform` |
 | 일시정지 | Esc로 `timeScale` 0/1과 일시정지 화면을 토글 | `ShifterController` |
@@ -1119,27 +1203,124 @@ void LateUpdate()
 
 *Scene 뷰에 그린 데드존(초록 상자). 위쪽이 넓고 아래쪽이 좁은 비대칭 상자이며, 플레이어가 이 상자를 벗어날 때만 카메라 목표가 움직입니다.*
 
-**② 박스 밀기: 공용 유틸리티에 추가한 부분**
+**② 키네마틱 이동과 박스 밀기: 플레이어를 옮기는 유일한 길**
 
 ```csharp
-// CharacterController2D.cs (발췌) — 가로 이동이 Dynamic 물체에 막히면, 그 물체에 플레이어 속도를 준다
-RaycastHit2D hit = Physics2D.BoxCast(box.center, box.size, 0.0f, dir, distance, collisionLayer);
-if (hit.collider == null) return move;
-
-if (axis == Vector3.right)                                          // 추가한 부분
+// CharacterController2D.cs (발췌) — 입력과 외부 이동량을 합친 뒤, 축마다 BoxCast로 막힌 거리까지만 옮긴다
+private void FixedUpdate()
 {
-    Rigidbody2D pushBody = hit.collider.GetComponent<Rigidbody2D>();
-    if (pushBody != null && pushBody.bodyType == RigidbodyType2D.Dynamic)
+    IsGrounded = CheckGrounded();
+    ApplyGravity();                                                  // 땅에 있으면 점프 횟수도 0으로
+    ApplyJump();
+
+    Vector3 desireMove =
+        new Vector3(moveInput * speed, VerticalVelocity) * Time.fixedDeltaTime
+        + externalDelta;                                             // 크러셔 벽이 민 양도 여기서 합쳐진다
+    externalDelta = Vector3.zero;
+
+    Vector3 moveVector = Vector3.zero;
+    moveVector.x = ResolveAxisMovement(desireMove.x, Vector3.right); // 가로와 세로를 따로 검사해
+    moveVector.y = ResolveAxisMovement(desireMove.y, Vector3.up);    // 벽에 막혀도 떨어지고, 바닥 위에서도 걷는다
+
+    if (moveVector.y != desireMove.y) VerticalVelocity = 0.0f;       // 바닥 · 천장에 막히면 세로 속도 0
+
+    rBody.MovePosition(transform.position + moveVector);
+}
+
+private float ResolveAxisMovement(float move, Vector3 axis)
+{
+    if (move == 0.0f) return 0.0f;
+
+    Vector3 dir = (move > 0.0f ? axis : -axis);
+    float distance = Mathf.Abs(move);
+    Bounds box = GetCastBox();                                       // 콜라이더보다 skinWidth만큼 작은 상자
+
+    RaycastHit2D hit = Physics2D.BoxCast(box.center, box.size, 0.0f, dir, distance, collisionLayer);
+    if (hit.collider == null) return move;
+
+    if (axis == Vector3.right)                                       // 직접 추가한 부분: 박스 밀기
     {
-        pushBody.linearVelocity = new Vector2(dir.x * speed, pushBody.linearVelocity.y);
+        Rigidbody2D pushBody = hit.collider.GetComponent<Rigidbody2D>();
+        if (pushBody != null && pushBody.bodyType == RigidbodyType2D.Dynamic)
+        {
+            pushBody.linearVelocity = new Vector2(dir.x * speed, pushBody.linearVelocity.y);
+        }
+    }
+
+    float allowed = Mathf.Max(0, hit.distance - skinWidth);          // 이미 겹쳐 있으면 hit.distance가 0 → 이동 0
+    return Mathf.Sign(move) * allowed;
+}
+```
+
+- **외부에서 미는 양도 같은 검사를 거친다.** 크러셔 벽은 `externalDelta`에 더하기만 하므로, 밀려도 다른 지형을 뚫지 않습니다(설계 규칙 3).
+- **박스 밀기.** 플레이어는 이번 프레임에 박스 앞에서 멈추고, 박스는 받은 속도로 물리 엔진이 옮깁니다. 다음 프레임에는 앞이 비어 플레이어가 따라 들어가므로 '밀고 가는' 움직임이 됩니다. 박스에는 Physics Material을 주지 않아, 밀기를 멈추면 기본 마찰(0.4)로 섭니다.
+- **마지막 줄이 얼어붙는 문제의 원인이다.** 이미 겹친 콜라이더는 거리 0으로 맞으므로 `allowed`가 어느 방향이든 0이 됩니다([7.2 ②](#72-문제-해결-경험)).
+
+**③ HP: 값을 바꾸는 모든 길이 프로퍼티 하나를 지난다**
+
+```csharp
+// Shifter.cs (발췌) — 범위 자르기 · HP 바 · 게임오버를 setter 한곳에서
+public float Hp
+{
+    get => hp;
+    set
+    {
+        hp = Mathf.Clamp(value, 0, MaxHp);
+        if (HpBar != null) HpBar.fillAmount = hp / MaxHp;
+        if (hp <= 0) Die();
     }
 }
 
-float allowed = Mathf.Max(0, hit.distance - skinWidth);
-return Mathf.Sign(move) * allowed;
+public void TakeDamage(float damage)                   // ITakeDamage 구현. 레드 타일 · 총알 · 보스 탄이 모두 여기로
+{
+    Hp -= damage;
+    if (gameObject.activeInHierarchy) StartCoroutine(DamageEffectRoutine());   // 0.1초 간격 빨간 점멸 3번
+}
+
+private void Die()
+{
+    if (GameoverUI != null) GameoverUI.SetActive(true);
+    Time.timeScale = 0.0f;
+}
 ```
 
-플레이어는 이번 프레임에 박스 앞에서 멈추고, 박스는 받은 속도로 물리 엔진이 옮깁니다. 다음 프레임에는 앞이 비어 플레이어가 따라 들어가므로 '밀고 가는' 움직임이 됩니다. 밀기를 멈추면 박스는 마찰로 섭니다. 박스에 따로 Physics Material을 주지 않아 Unity 2D의 기본 마찰(0.4)이 적용됩니다. 세로 속도는 그대로 두어 박스는 밀리는 중에도 중력으로 떨어집니다.
+약점 성공 시의 회복(`shifter.Hp += 30`)도 같은 setter를 지나므로 100을 넘지 않습니다. 반면 `timeScale`은 게임오버(`Die`)와 일시정지(`ShifterController.EscInput`)가 각자 바꿔, 게임오버 화면에서 Esc를 두 번 누르면 시간이 다시 흐릅니다([7.3 ②](#73-아쉬운-점과-향후-계획)).
+
+**④ 레드 타일: 부모 하나가 자식 타일 전체를 본다**
+
+```csharp
+// Red.cs — 닿아 있는 동안만 타이머를 쌓고, 떨어지면 처음부터 다시 센다
+private void CheckPlayerOnTile()
+{
+    if (playerCollider == null || playerDamageable == null) return;
+
+    bool isStandingOnRed = false;
+    foreach (var col in childColliders)                  // Awake에서 GetComponentsInChildren으로 모아 둔 타일들
+    {
+        if (col.enabled && col.IsTouching(playerCollider))
+        {
+            isStandingOnRed = true;
+            break;
+        }
+    }
+
+    if (isStandingOnRed)
+    {
+        damageTimer += Time.deltaTime;
+        if (damageTimer >= damageInterval)
+        {
+            playerDamageable.TakeDamage(damageAmount);
+            damageTimer = 0f;
+        }
+    }
+    else
+    {
+        damageTimer = 0f;
+    }
+}
+```
+
+타일마다 스크립트를 붙이지 않아, 타일을 여러 개 이어 붙여도 피해 간격은 하나로 셉니다. `IsTouching`은 물리 엔진이 만든 접촉만 보므로, 플레이어(키네마틱)와 타일 사이에 접촉이 생기지 않으면 항상 거짓입니다. STAGE 2 레드 타일에 화상이 없는 원인이 여기입니다([7.3 ①](#73-아쉬운-점과-향후-계획)).
 
 ---
 
@@ -1182,7 +1363,7 @@ transform.localScale = new Vector3(FacingDirection, 1, 1);                    //
 **② 겹치면 얼어붙는 문제: 크러셔 벽과 보스전 랜덤 발판 (07.07, 07.10)**
 
 - **(문제)** 두 곳에서 같은 증상이 나왔습니다. 크러셔 벽에 콜라이더를 켜 두면 벽이 플레이어와 겹치는 순간 플레이어가 얼어붙었고, 보스전 랜덤 발판이 플레이어 위치에 생기면 빠져나올 수 없었습니다.
-- **(원인)** 플레이어는 이동할 때마다 '지금 위치에서 이동 방향으로' BoxCast를 쏩니다. 프로젝트 설정상 레이캐스트는 이미 들어가 있는 콜라이더도 맞히므로(`Queries Start In Colliders`), 겹친 상태에서는 모든 방향이 거리 0으로 막힙니다. 키네마틱 이동에는 겹침을 풀어 주는 처리가 없습니다. 랜덤 발판은 흰·검이 둘 다 겹치면 어느 색으로 바꿔도 하나는 켜져 있어 Shift로도 풀 수 없었습니다.
+- **(원인)** 플레이어는 이동할 때마다 '지금 위치에서 이동 방향으로' BoxCast를 쏩니다. 프로젝트 설정상 레이캐스트는 이미 들어가 있는 콜라이더도 맞히므로(`Queries Start In Colliders`), 겹친 상태에서는 모든 방향이 거리 0으로 막힙니다. 키네마틱 이동에는 겹침을 풀어 주는 처리가 없습니다([6장 ②](#6-기타-구현)의 마지막 줄). 랜덤 발판은 흰·검이 둘 다 겹치면 어느 색으로 바꿔도 하나는 켜져 있어 Shift로도 풀 수 없었습니다.
 - **(해결)** 크러셔 벽은 콜라이더를 끄고 겹침을 직접 검사해 벽 이동량만큼 플레이어를 옮겼습니다([4.4 결정 1](#44-고민과-선택)). 랜덤 발판은 생성 위치 검사 규칙을 만드는 대신 기능을 걷어냈습니다([5.4 결정 2](#54-고민과-선택)). 두 문제의 공통 원인인 '겹침 해소 없음'은 [7.3](#73-아쉬운-점과-향후-계획)에 남은 과제로 적었습니다.
 
 **③ 고쳤던 빌드 에러가 리팩토링에서 되살아난 문제 (07.07 → 07.10 → 11.09)**
@@ -1206,17 +1387,17 @@ if (sceneName == "Exit")
 
 ### 7.3 아쉬운 점과 향후 계획
 
-아쉬운 점은 세 갈래입니다. ①은 11.09 테스트 플레이에서 찾았지만 아직 고치지 않은 문제로, 고치면 7.2(문제 해결 경험)로 옮길 항목입니다. 위 세 줄은 충돌 설정(트리거 · 판정 크기) 때문에 규칙이 동작하지 않는 버그이고, 아래 두 줄은 코드가 처리하지 않는 상황과 레벨 배치 문제입니다. ②는 구조에서 나온 부채로, 기능을 늘릴수록 고치는 비용이 커지는 항목입니다. 게임 상태 분산처럼 증상(게임오버 중 Esc)이 이미 드러난 것도 있습니다. ③은 개발을 마친 뒤 코드를 한 줄씩 다시 읽으며 코드를 쓰는 방식을 돌아본 것으로, 지금 다시 쓴다면 처음부터 다르게 쓸 부분입니다.
+아쉬운 점은 세 갈래입니다. ① 11.09 테스트 플레이에서 찾았지만 아직 고치지 않은 문제(고치면 7.2로 옮길 항목), ② 기능을 늘릴수록 고치는 비용이 커지는 구조의 부채, ③ 코드를 다시 읽으며 돌아본 작성 습관입니다.
 
 **① 테스트로 찾은 미수정 문제**
 
 | 문제 | 원인 | 고칠 방법 (To-Be) |
 |---|---|---|
-| **STAGE 1 총알이 맞지 않는다** | 플레이어는 키네마틱 `Rigidbody2D`인데, `Bullet` 프리팹은 `Rigidbody2D`도 없고 콜라이더가 트리거도 아니다. 2D 물리에서 키네마틱과 정적 콜라이더 사이에는 (트리거가 아니면) 접촉이 생기지 않아 `OnTriggerEnter2D`가 불리지 않는다 | 총알 콜라이더를 트리거로 바꾼다. 투사체를 하나로 합칠 때(아래) 보스 탄처럼 트리거 + Rigidbody로 통일한다 |
-| **STAGE 2 레드 타일에 화상이 없다** | STAGE 1·보스방은 씬에서 레드 타일의 `isTrigger`를 켜 두었는데 STAGE 2의 3개만 꺼져 있다. 같은 이유로 접촉이 생기지 않아 `IsTouching`이 항상 거짓이다. 크러셔 벽 구간 바닥이 이 레드 타일이라, 벽에 끌려가도 피해가 없다 | 레드 타일 프리팹 자체를 트리거로 바꿔 씬마다 오버라이드하지 않게 한다. 트리거여도 플레이어 이동의 BoxCast가 트리거를 맞히므로(`Queries Hit Triggers`) 발판 역할은 유지된다 |
-| **보스 레이저가 쏘자마자 사라진다** | 레이저 프리팹의 트리거가 6×4유닛(박스 2×2에 스케일 3×2)으로 커서, 플레이어 쪽으로 기울어 날아가자마자 회색 발판·지형에 닿아 0.2초 안에 파괴된다. 테스트 3회 내내 레이저 피해가 0이었다 | 판정 박스를 눈에 보이는 레이저 크기로 줄이고, 회색 지형에서 사라지는 규칙이 보스 몸 근처에서 바로 적용되지 않도록 발사 위치를 보스 바깥으로 옮긴다 |
-| **Shift 순간 다른 색 발판 안에 갇힌다** | Shift 순간에 겹침을 검사하지 않는다. 다른 색 발판을 지나는 도중 Shift하면 그 발판이 켜지며 플레이어가 그 안에 갇히고, 다시 Shift할 수 있는 1초 뒤까지 움직이지 못한다 (7.2 ②와 같은 원인) | Shift 전에 `Physics2D.OverlapBox`로 새 색 발판과 겹치는지 확인해 막거나, 겹치면 가장 가까운 바깥으로 밀어낸다 |
-| **레이저 퍼즐이 흰색 상태에서는 직선 한 번으로 풀린다** (의도 확인 필요) | 검은색에서는 거울 3번 반사(59.25°)가 필요하지만, 흰색이 되면 길을 막던 검은 발판이 꺼져 센서까지 직선이 열린다. 콜라이더를 끄는 방식이 레이저에 그대로 적용된 결과다([3.4 결정 3](#34-고민과-선택)). 의도한 지름길이 아니라면 거울을 쓸 이유가 사라진다 | 의도가 아니라면 직선 경로를 회색 지형으로 막고, Shift는 '거울 사이의 발판'에만 영향을 주도록 배치를 조정한다 |
+| **STAGE 1 총알이 맞지 않는다** | 플레이어는 키네마틱, 총알은 `Rigidbody2D`가 없는 비트리거 콜라이더다. 키네마틱과 정적 콜라이더 사이에는 트리거가 아니면 접촉이 생기지 않아 `OnTriggerEnter2D`가 불리지 않는다 | 총알 콜라이더를 트리거로. 투사체를 합칠 때(②) 보스 탄처럼 트리거 + Rigidbody로 통일 |
+| **STAGE 2 레드 타일에 화상이 없다** | STAGE 2의 레드 타일 3개만 씬에서 `isTrigger`가 꺼져 있어, 같은 이유로 `IsTouching`이 항상 거짓이다([6장 ④](#6-기타-구현)). 크러셔 벽 구간 바닥이라 끌려가도 피해가 없다 | 프리팹 자체를 트리거로 바꿔 씬별 오버라이드를 없앤다. BoxCast가 트리거도 맞히므로(`Queries Hit Triggers`) 발판 역할은 그대로 |
+| **보스 레이저가 쏘자마자 사라진다** | 판정 트리거가 6×4유닛(박스 2×2 × 스케일 3×2)이라 발사 직후 회색 지형에 닿아 0.2초 안에 파괴된다. 테스트 3회 내내 레이저 피해 0 | 판정을 보이는 크기로 줄이고, 발사 위치를 보스 바깥으로 옮긴다 |
+| **Shift 순간 다른 색 발판 안에 갇힌다** | 다른 색 발판을 지나는 도중 Shift하면 켜진 발판 안에 갇혀, 1초 뒤 다시 Shift할 때까지 못 움직인다 (7.2 ②와 같은 원인) | Shift 직전에 겹침을 검사해 막거나 바깥으로 밀어낸다. 꺼진 콜라이더는 `Physics2D.OverlapBox`에 잡히지 않으므로 `SpriteRenderer.bounds`로 직접 검사해야 한다 |
+| **레이저 퍼즐이 흰색이면 직선 한 번에 풀린다** (의도 확인 필요) | 검은색에서는 거울 3번 반사(59.25°)가 필요하지만, 흰색이면 검은 발판이 꺼져 센서까지 직선이 열린다([3.4 결정 3](#34-고민과-선택)) | 의도가 아니라면 직선 경로를 회색 지형으로 막는다 |
 
 <!-- ✍️ '0.2초 안에 파괴'를 어떻게 쟀는지, '59.25°'가 무엇의 각도인지(예: 이미터에서 쏘는 조준 각도) 적어 주세요. 지금은 읽는 사람이 수치의 뜻과 근거를 알 수 없습니다 -->
 
@@ -1224,25 +1405,25 @@ if (sceneName == "Exit")
 
 | 아쉬운 점 (기술 부채) | 왜 문제인가 | 향후 계획 (To-Be) |
 |---|---|---|
-| `PlatformManager`가 매 프레임 태그로 발판을 다시 찾고, `Rigidbody2D` 유무로 관리 대상을 거른다 | 이유였던 보스전 랜덤 발판은 사라졌는데, 판정이 바뀌는 순간(Shift)과 무관하게 매 프레임 배열 4개 할당과 `GetComponent`가 반복된다. 크러셔 벽처럼 관리에서 빼려면 `Rigidbody2D`를 붙여야 하는 암묵 규칙도 남았다. 거꾸로 `Rigidbody2D`가 없는 STAGE 1 총알은 흰·검 태그 때문에 '발판'으로 관리되어, 반대 색 총알이 반투명해지는 의도하지 않은 효과도 생긴다 | 시작할 때 한 번 모으고(관리할 발판은 컴포넌트로 명시), `Shifter`가 속성을 바꿀 때 이벤트를 내면 그때만 갱신한다. `UIModManager`가 이미 '바뀔 때만 갱신'으로 동작한다 |
-| 속성이 태그를 차지해, 플레이어를 이름 문자열 `"Shifter"`로 판별한다 (6개 파일 7곳) | 오브젝트 이름을 바꾸면 7곳이 조용히 깨진다. 플레이어 태그가 시작하자마자 `Common`으로 바뀌므로, `UIModManager`의 `FindWithTag("Player")` 대체 경로는 실행 순서에 따라 플레이어를 찾지 못한다 | 속성을 enum 컴포넌트로 옮기고 태그는 `Player`로 되돌린다. 플레이어 판별은 컴포넌트(`TryGetComponent<Shifter>`)나 Player 레이어로 |
-| 투사체 코드가 두 벌이다 (`Bullet`: Transform 이동·사거리 소멸·`ITakeDamage` / `BossProjectile`: Rigidbody 이동·10초 소멸·`Shifter` 직접 호출) | 같은 규칙(같은 색이면 피격)을 두 곳에서 고쳐야 한다. `BulletLauncher`는 `BossAttributeUtil`을 쓰지 않고 태그와 색을 직접 지정한다 | 투사체 하나로 합치고(이동 방식만 옵션), 색 지정은 `BossAttributeUtil`, 피해는 `ITakeDamage`로 통일한다 |
-| `BossManager`가 패턴의 구체 타입과 애니메이션 트리거를 `switch`로 직접 안다 | 패턴을 추가하면 `BossManager`를 고쳐야 한다. 인터페이스는 `EndPattern` 호출에만 쓰인다 | `IBossPattern`이 자기 애니메이션 트리거를 갖게 하고, `GetComponents<IBossPattern>()` 배열에서 무작위로 고른다 |
-| 게임 상태가 한 곳에 없다. 일시정지는 `ShifterController`, 게임오버는 `Shifter`가 각자 `timeScale`을 바꾼다 | 게임오버 화면에서도 Esc가 먹는다. 일시정지를 켰다 끄면 `timeScale`이 1로 돌아와 게임오버 화면이 뜬 채 게임이 다시 흐른다 | 진행 · 일시정지 · 게임오버 상태를 한 곳에서 관리하고, 입력은 상태를 보고 처리한다 |
-| 전구 퍼즐의 상태가 스프라이트 색이다 (`color == Color.green`) | 전구 색 연출을 바꾸면 판정이 깨진다. 문이 열릴 때까지 매 프레임 개수를 센다 | `bool[]` 상태를 두고 색은 표시만 한다. 판정은 버튼을 밟을 때 한 번 |
-| 수치가 코드 기본값 · 프리팹 · 씬 오버라이드에 흩어져 있다 | 실제로 적용되는 값을 찾으려면 세 곳을 봐야 한다(예: Shift 쿨타임은 코드 2초 / 프리팹 1초). 운석 패턴(15개 × 1초)은 패턴 간격(10초)에 잘려 약 10개만 떨어지는 등, 서로 관련된 값이 따로 조정된다 | 조절값을 ScriptableObject 설정으로 모으고, 패턴 길이가 간격을 넘으면 경고하거나 패턴이 끝났다고 알린 뒤 다음으로 넘어간다 |
+| `PlatformManager`가 매 프레임 태그로 발판을 다시 찾고, `Rigidbody2D` 유무로 거른다 | 이유였던 랜덤 발판은 사라졌는데 매 프레임 배열 4개 할당과 `GetComponent`가 반복된다. 관리에서 빼려면 `Rigidbody2D`를 붙여야 하는 암묵 규칙이 남았고, 거꾸로 `Rigidbody2D`가 없는 STAGE 1 총알은 '발판'으로 관리되어 반대 색이면 반투명해진다 | 시작할 때 한 번 모으고, `Shifter`가 속성을 바꿀 때 이벤트를 내면 그때만 갱신한다(`UIModManager`처럼) |
+| 속성이 태그를 차지해 플레이어를 이름 `"Shifter"`로 판별한다 (6개 파일 7곳) | 이름을 바꾸면 7곳이 조용히 깨진다. `UIModManager`의 `FindWithTag("Player")` 대체 경로는 실행 순서에 따라 플레이어를 못 찾는다 | 속성은 enum 컴포넌트로, 태그는 `Player`로 되돌리고 판별은 `TryGetComponent<Shifter>`로 |
+| 투사체 코드가 두 벌이다 (`Bullet` · `BossProjectile`) | 같은 색 피격 규칙을 두 곳에서 고쳐야 하고, 색 지정도 `BulletLauncher`만 `BossAttributeUtil` 없이 따로 한다 | 하나로 합치고(이동 방식만 옵션), 색은 `BossAttributeUtil`, 피해는 `ITakeDamage`로 |
+| `BossManager`가 패턴 타입과 애니메이션 트리거를 `switch`로 안다 | 패턴을 추가하면 `BossManager`를 고쳐야 한다 | 패턴이 자기 트리거를 갖고, `GetComponents<IBossPattern>()`에서 무작위로 고른다 |
+| 게임 상태가 한 곳에 없다 (`timeScale`을 두 클래스가 바꿈) | 게임오버 화면에서 Esc를 두 번 누르면 게임이 다시 흐른다([6장 ③](#6-기타-구현)) | 진행 · 일시정지 · 게임오버를 한 곳에서 관리하고, 입력은 상태를 보고 처리 |
+| 전구 퍼즐의 상태가 스프라이트 색이다 ([4.3 ③](#43-핵심-동작)) | 색 연출을 바꾸면 판정이 깨지고, 문이 열릴 때까지 매 프레임 센다 | `bool[]` 상태를 두고, 판정은 버튼을 밟을 때 한 번 |
+| 수치가 코드 기본값 · 프리팹 · 씬 오버라이드에 흩어져 있다 | 실제 값을 찾으려면 세 곳을 봐야 한다(Shift 쿨타임: 코드 2초 / 프리팹 1초). 운석(15개 × 1초)이 패턴 간격(10초)에 잘리듯, 관련된 값이 따로 조정된다 | ScriptableObject 설정으로 모으고, 패턴 길이가 간격을 넘으면 경고 |
 
 **③ 코드 작성 습관**
 
 <!-- ✍️ 이 항목(③)은 Claude가 현재 코드를 근거로 쓴 초안입니다(파일·개수는 Assets/Scripts 기준으로 확인함). '지금 실력'은 직접 겪은 사람의 시점이므로, 코드를 다시 읽고 처음 든 생각이나 이후 프로젝트에서 실제로 바꾼 습관(예: OverFixed의 enum ID · private set)으로 자기 말로 고쳐 주세요 -->
 
-②가 '기능이 늘면 다시 설계해야 할 구조'라면, ③은 **코드를 쓰는 방식** 자체입니다. 대부분 지금 당장 버그를 만들지는 않지만, 고치거나 기능을 더할 때 실수를 부르는 부분입니다.
+③은 당장 버그는 아니지만, 고치거나 기능을 더할 때 실수를 부르는 **코드 작성 방식**입니다.
 
 **③-1. 상수 없이 쓴 문자열과 숫자**
 
-- 속성 태그 `"Common"` · `"White"` · `"Black"` · `"Red"`를 4개 파일에서 문자열 그대로 18번 썼습니다(`PlatformManager` 10 · `UIModManager` 4 · `BulletLauncher` 3 · `BossProjectile` 1). 같은 문자열의 상수는 `Shifter`(private)와 `BossAttributeUtil`(public)에 따로 두 벌 있고, `"Red"`는 상수가 아예 없습니다. 상수를 만들어 놓고도 공유하지 않았습니다.
+- 속성 태그 4종을 4개 파일에서 문자열 그대로 18번 썼습니다(`PlatformManager` 10 · `UIModManager` 4 · `BulletLauncher` 3 · `BossProjectile` 1). 상수는 `Shifter`(private)와 `BossAttributeUtil`(public)에 두 벌 있고, `"Red"`는 상수가 없습니다.
 - 뜻이 있는 숫자도 그 자리에 바로 썼습니다. 그로기 5초 · 약점 회복 30 · 그로기까지 패턴 3회(`BossManager`), 레이저 재발사 오프셋 `0.05f` 4곳(`LightBeam`), 반투명 `0.5f`(`PlatformManager`와 `CrusherWall`에 따로).
-- **이 프로젝트에서의 문제.** 태그 문자열에 오타가 나도 컴파일은 되고, "같은 색이면 실체" 규칙만 조용히 깨집니다. 3.1에서 속성을 '태그 문자열 하나로 통일'했다고 했지만, 그 문자열은 상수 두 벌과 4개 파일의 18곳에 흩어져 있어 태그 하나의 이름을 바꾸거나 오타를 찾으려면 이 곳들을 모두 뒤져야 합니다. `patternCount > 3`(그로기까지 횟수)과 `Random.Range(0, 3)`(패턴 종류 수)은 같은 3이지만 뜻이 달라, 패턴을 추가할 때 어느 3을 고칠지 코드만 보고는 알 수 없습니다.
+- **이 프로젝트에서의 문제.** 태그 오타는 컴파일되고 "같은 색이면 실체" 규칙만 조용히 깨집니다. `patternCount > 3`(그로기까지 횟수)과 `Random.Range(0, 3)`(패턴 종류 수)은 같은 3이지만 뜻이 달라, 패턴을 추가할 때 어느 3을 고칠지 코드만 보고는 알 수 없습니다.
 
 ```csharp
 // 그때: PlatformManager.cs — 태그 문자열과 투명도를 그 자리에서 직접 쓴다
@@ -1266,14 +1447,12 @@ public static class Tags
 if (Tags.IsOpposite(playerTag, obj.tag)) color.a = HiddenAlpha;   // CrusherWall과 같은 상수를 쓴다
 ```
 
-코드 기본값 · 프리팹 · 씬 오버라이드에 수치가 흩어진 문제는 위 ② 표의 마지막 행에서 다룹니다.
-
 **③-2. GetComponent로 '있는지' 확인하기**
 
-- `GetComponent`를 29곳에서 썼고 `TryGetComponent`는 한 번도 쓰지 않았습니다. 꼭 있어야 하는 컴포넌트를 보장하는 `[RequireComponent]`도 `ShifterController` 한 곳뿐입니다.
-- **컴포넌트가 있는지를 '종류 판별'에 썼습니다.** `PlatformManager`는 `GetComponent<Rigidbody2D>() != null`로 발판이 아닌 것을 거르고(위 ② 첫 행), `LightBeam`은 레이캐스트에 맞을 때마다 `GetComponent<Mirror>() != null`, `GetComponent<LightSensor>() != null`로 거울과 센서를 가립니다.
-- **프리팹을 `GameObject`로 받아, 만든 뒤에 다시 찾습니다.** 보스 패턴 3종과 `BulletLauncher`는 생성 직후 `GetComponent<BossProjectile>()` · `GetComponent<Bullet>()`을 부르고, 운석은 하나 만들 때마다 `GetComponent`를 두 번 부릅니다. 보스 탄은 `Start`에서 `FindFirstObjectByType<Shifter>()`로 씬 전체를 검색하므로, 난사 패턴 한 번에 이 검색이 40번 일어납니다.
-- **null 처리 기준이 없습니다.** `BulletLauncher`는 `sr != null` · `bullet != null`이 아니면 조용히 건너뛰고, `BossAttributeUtil.Apply`는 확인 없이 바로 써서 `SpriteRenderer`가 없으면 예외가 나며, `BossProjectile`은 `Rigidbody2D`가 없으면 실행 중에 `AddComponent`로 붙입니다. 같은 '빠진 컴포넌트'를 클래스마다 무시 · 예외 · 자동 보정으로 다르게 처리해, 설정 누락이 어디서 드러날지 예측할 수 없습니다.
+- `GetComponent` 29곳, `TryGetComponent` 0곳, `[RequireComponent]`는 `ShifterController` 한 곳입니다.
+- **'있는지'를 종류 판별에 썼습니다.** `PlatformManager`는 `Rigidbody2D` 유무로 발판이 아닌 것을 거르고(위 ② 첫 행), `LightBeam`은 맞을 때마다 `GetComponent<Mirror>() != null`로 거울을 가립니다.
+- **프리팹을 `GameObject`로 받아, 만든 뒤 다시 찾습니다.** 보스 탄은 `Start`에서 `FindFirstObjectByType<Shifter>()`로 씬 전체를 검색해, 난사 한 번에 이 검색이 40번 일어납니다.
+- **빠진 컴포넌트를 클래스마다 다르게 처리합니다.** `BulletLauncher`는 조용히 건너뛰고, `BossAttributeUtil.Apply`는 예외가 나고, `BossProjectile`은 `AddComponent`로 붙여, 설정 누락이 어디서 드러날지 예측할 수 없습니다.
 
 ```csharp
 // 그때: BossPattern_Rampage.cs · BossProjectile.cs
@@ -1297,22 +1476,16 @@ private void OnTriggerEnter2D(Collider2D other)    // 회색 지형에 닿으면
 }
 ```
 
-`Instantiate`에 컴포넌트 타입 프리팹을 넘기면 그 컴포넌트가 바로 돌아오므로, 생성 직후의 `GetComponent`와 null 확인이 사라집니다. 맞은 대상을 `TryGetComponent`로 고르면, 적어도 투사체에서는 플레이어를 이름 `"Shifter"`로 비교할 필요(위 ② 둘째 행)도 없어집니다.
+컴포넌트 타입 프리팹을 `Instantiate`하면 그 컴포넌트가 바로 돌아와 생성 직후의 `GetComponent`가 사라지고, 맞은 대상을 `TryGetComponent`로 고르면 이름 `"Shifter"` 비교(위 ② 둘째 행)도 필요 없습니다.
 
 **③-3. 이름과 접근 범위**
 
 | 그때 쓴 코드 | 이 프로젝트에서 생긴 문제 | 지금이라면 |
 |---|---|---|
-| 필드 이름 규칙이 섞여 있다. private 필드 16개(7개 파일)가 `MaxHp` · `PatternInterval` · `Door2`처럼 대문자로, `door_1`은 밑줄로 쓰였다. 전구 버튼 두 클래스는 전구 배열 이름이 `Light` | 필드인지 프로퍼티·타입인지 이름만으로 구분되지 않는다. `Light`는 Unity의 `Light` 컴포넌트와 같은 이름이라, 그 클래스 안에서 `Light`가 무엇을 가리키는지 헷갈린다. 16개 중 12개는 인스펙터에 연결된 직렬화 필드라, 나중에 이름을 바꾸면 프리팹·씬에 저장된 값이 끊긴다(`[FormerlySerializedAs]`가 필요) | private 필드는 camelCase, 프로퍼티·타입만 PascalCase. 이름은 역할로 (`lights`, `exitDoor`) |
-| 오타가 이름으로 굳었다: `ColliderControll` · `AlphaControll`, 레이저 패턴 `BossPattern_Razer`, 파일 `Shifter Controller.cs`(클래스는 `ShifterController`) | 'Laser'로 검색하면 레이저 패턴을 찾을 수 없고, 파일 이름만 보고는 클래스 이름을 알 수 없다 | 처음 만들 때 이름을 맞추고, 파일 이름 = 클래스 이름 |
-| 보스 체력이 public 필드다. `BossHeart`가 `boss.CurrentBossCount--`로 직접 깎고, 이어서 부르는 `BossManager.DamageToBoss()`는 이름과 달리 플레이어 HP를 30 회복하고 사망을 확인한다 | 체력을 깎는 곳과 사망을 판정하는 곳이 두 클래스로 나뉘어 있어, 약점 말고 다른 공격을 추가하면 `DamageToBoss` 호출을 빠뜨리기 쉽다 | `Boss.TakeHit()`이 체력 감소와 사망 판정을 함께 하고, 회복은 `Shifter.Heal(30)`처럼 이름대로 부른다 |
-| 쓰지 않는 코드가 남아 있다: `ShifterController.spriteRenderer`(대입만 함), `BossAttributeUtil.AllTags` · `RandAllTag()` | 읽는 사람이 '어디서 쓰지?'를 찾게 된다 | 07.07 검수 때처럼 참조 검색으로 함께 지운다 |
-
-**지금이라면 처음부터 지킬 규칙**
-
-- 태그 4종(`Common` · `White` · `Black` · `Red`)은 상수 클래스 하나에 둔다. 그로기 시간 · 약점 회복량처럼 조절할 값은 `[SerializeField]`로, 반투명 알파처럼 여러 클래스가 함께 쓰는 규칙 값은 `const`로 한 곳에 둔다.
-- 보스 탄 · 총알 프리팹은 `BossProjectile` · `Bullet` 타입으로 받고, 꼭 있어야 하는 `Rigidbody2D`는 `[RequireComponent]`로 보장한다. 거울 · 센서처럼 맞은 대상에 있을 수도 있는 것만 `TryGetComponent`로 묻고, 필수 참조가 비어 있으면 `Awake`에서 바로 알린다.
-- 보스 체력과 플레이어 HP는 `Boss.TakeHit()` · `Shifter.Heal()`처럼 그 값을 가진 클래스의 함수로만 바꾼다.
+| 필드 이름 규칙이 섞여 있다. private 필드 16개(7개 파일)가 `MaxHp` · `Door2`처럼 대문자, `door_1`은 밑줄. 전구 배열 이름은 `Light` | 이름만으로 필드인지 타입인지 구분되지 않고, `Light`는 Unity의 `Light` 컴포넌트와 겹친다. 16개 중 12개는 직렬화 필드라 나중에 바꾸면 인스펙터 값이 끊긴다(`[FormerlySerializedAs]` 필요) | private 필드는 camelCase, 이름은 역할로 (`lights`, `exitDoor`) |
+| 오타가 이름으로 굳었다: `ColliderControll`, `BossPattern_Razer`, 파일 `Shifter Controller.cs` | 'Laser'로 검색하면 레이저 패턴이 안 나오고, 파일 이름으로 클래스를 알 수 없다 | 파일 이름 = 클래스 이름 |
+| 보스 체력이 public 필드다. `BossHeart`가 직접 깎고, 이어 부르는 `DamageToBoss()`는 이름과 달리 플레이어 HP 회복과 사망 확인을 한다 | 다른 공격을 추가하면 `DamageToBoss` 호출을 빠뜨리기 쉽다 | `Boss.TakeHit()`이 감소와 사망 판정을 함께, 회복은 `Shifter.Heal(30)`처럼 이름대로 |
+| 쓰지 않는 코드: `ShifterController.spriteRenderer`(대입만 함), `BossAttributeUtil.AllTags` · `RandAllTag()` | 읽는 사람이 '어디서 쓰지?'를 찾게 된다 | 참조 검색으로 함께 지운다 |
 
 ### 7.4 배운 점
 
