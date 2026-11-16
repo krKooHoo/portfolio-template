@@ -77,7 +77,8 @@
     const line = (el.textContent || '').split('\n').map((x) => x.trim()).find((x) => x && !(kind === 'mermaid' && x.startsWith('%%'))) || '';   // mermaid는 %%{init…}%% 지시 줄을 건너뜀
     return squash(line).slice(0, 60);
   }
-  const fpSame = (a, b, kind) => { const x = squash(a), y = squash(b); return kind === 'table' ? x === y : x.slice(0, 60) === y.slice(0, 60); };
+  // 앞 60자를 비교하되 끝 공백은 빼고 봄 — 60번째 글자가 공백인 줄도 "60자로 자른 지문"과 "첫 줄 전체" 어느 쪽으로 적어도 맞게(deck-edits.py validate와 같은 규칙)
+  const fpSame = (a, b, kind) => { const x = squash(a), y = squash(b); return kind === 'table' ? x === y : x.slice(0, 60).trimEnd() === y.slice(0, 60).trimEnd(); };
   const normSrc = (s) => decode(String(s || '')).replace(/^\.\//, '');
 
   // 원문 블록 하나 찾기. ref = { kind, n?, src?, fp?, sectionPath? }, path = 장면의 sectionPath

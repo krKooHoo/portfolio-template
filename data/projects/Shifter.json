@@ -250,6 +250,24 @@
         ]
       },
       {
+        "key": "shift-bullet",
+        "chapter": "shift",
+        "layout": "code",
+        "tab": "구현",
+        "title": {"text": "③ 탄환: 같은 색일 때만 맞는다", "verbatim": true},
+        "lead": null,
+        "sectionPath": ["3. Shift 속성 시스템", "3.3 핵심 동작"],
+        "points": [
+          {
+            "label": "",
+            "text": "흰·검 발판은 탄환을 막지 않습니다. 보스 탄을 막는 것은 회색 지형뿐이라, 발판 뒤에 숨는 대신 색을 바꿔 몸으로 흘려보내는 것이 핵심 회피 수단입니다.",
+            "verbatim": true
+          }
+        ],
+        "visuals": [{"kind": "code", "n": 3, "fp": "// BossProjectile.cs — 같은 색이면 맞고 사라진다. 다른 색이면 지나간다. 회색 지형에는"}],
+        "edited": true
+      },
+      {
         "key": "shift-choice",
         "chapter": "shift",
         "layout": "overview",
@@ -348,6 +366,22 @@
         ]
       },
       {
+        "key": "light-puzzle",
+        "chapter": "gimmick",
+        "layout": "code",
+        "tab": "구현",
+        "title": {"text": "③ 전구 퍼즐: 버튼이 이웃 전구까지 바꾼다", "verbatim": true},
+        "lead": null,
+        "sectionPath": ["4. 스테이지 기믹과 퍼즐", "4.3 핵심 동작"],
+        "points": [
+          {"label": "", "text": "버튼 하나가 이웃 전구까지 뒤집기 때문에, 하나씩 맞춰 나가면 이미 켠 전구가 다시 꺼집니다.", "verbatim": true},
+          {"label": "", "text": "꼬이면 리셋 버튼을 밟아 전구를 모두 흰색으로 되돌립니다(`ResetLights`).", "verbatim": true},
+          {"label": "", "text": "퍼즐의 상태를 따로 두지 않고 스프라이트 색으로 판정한 것은 지금 보면 아쉬운 선택입니다", "verbatim": true}
+        ],
+        "visuals": [{"kind": "code", "n": 3, "fp": "// ButtontoLight.cs — 버튼에 연결된 전구들(이웃 포함)을 초록 ↔ 흰색으로 뒤집는다"}],
+        "edited": true
+      },
+      {
         "key": "gimmick-choice",
         "chapter": "gimmick",
         "layout": "overview",
@@ -404,6 +438,22 @@
         "sectionPath": ["5. 보스전", "5.1 문제와 구조"],
         "points": [],
         "visuals": [{"kind": "table", "n": 2, "fp": "운석|난사|레이저"}]
+      },
+      {
+        "key": "boss-interface",
+        "chapter": "boss",
+        "layout": "code",
+        "tab": "구현",
+        "title": {"text": "새 패턴 추가하기", "verbatim": true},
+        "lead": null,
+        "sectionPath": ["5. 보스전", "5.2 사용법"],
+        "points": [
+          {"label": "", "text": "`IBossPattern`을 구현한 컴포넌트를 보스 오브젝트에 붙인다.", "verbatim": true},
+          {"label": "", "text": "`StartPattern`에서 코루틴을 시작하고, 만든 투사체는 목록에 담는다.", "verbatim": true},
+          {"label": "", "text": "`EndPattern`에서 `StopAllCoroutines()` 후 목록의 투사체를 파괴한다.", "verbatim": true}
+        ],
+        "visuals": [{"kind": "code", "n": 1, "fp": "// IBossPattern.cs — BossManager가 패턴에 대해 아는 것은 '시작'과 '정리'뿐"}],
+        "edited": true
       },
       {
         "key": "boss-pattern-change",
@@ -856,6 +906,6 @@
         "visuals": []
       }
     ],
-    "applied": "a4d36941536ff49a"
+    "applied": "1092a7c3488870b9"
   }
 }

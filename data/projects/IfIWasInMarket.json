@@ -254,6 +254,26 @@
         "visuals": [{"kind": "code", "n": 1, "fp": "// LiarClient.cs — 지목 상태. 이 상태가 할 일을 정해진 순서로 부른다"}]
       },
       {
+        "key": "phase-record",
+        "chapter": "turn",
+        "layout": "code",
+        "tab": "구현",
+        "title": {"text": "② 상태 기록과 남은 시간: `DoSetPhase` 한 곳", "verbatim": true},
+        "lead": null,
+        "sectionPath": ["3. 턴 메시지 처리", "3.3 핵심 동작"],
+        "points": [
+          {"label": "", "text": "모든 핸들러가 `DoSetPhase`로 시작하므로, \"지금 무슨 상태인가\"를 바꾸는 길이 하나뿐입니다.", "verbatim": true},
+          {
+            "label": "",
+            "text": "서버는 제한시간을 상태가 시작될 때 한 번만 보냅니다. 클라이언트는 받은 시각을 기억해 남은 시간을 직접 계산하므로, 매초 시간을 주고받지 않습니다.",
+            "verbatim": true
+          },
+          {"label": "", "text": "대가로, 클라이언트마다 메시지를 받은 시각 기준이라 네트워크 지연만큼 표시가 조금씩 어긋납니다.", "verbatim": true}
+        ],
+        "visuals": [{"kind": "code", "n": 2, "fp": "// LiarClient.cs (발췌) — 서버가 보낸 상태는 여기서만 기록한다. 밖에서는 읽기만"}],
+        "edited": true
+      },
+      {
         "key": "turn-choice",
         "chapter": "turn",
         "layout": "overview",
@@ -363,6 +383,22 @@
             "fp": "// LiarClient.cs — 지금이 어떤 채팅을 보낼 차례인지 알아서 판단해서 보낸다. 로비가 이거 하"
           }
         ]
+      },
+      {
+        "key": "special-chat",
+        "chapter": "chat",
+        "layout": "code",
+        "tab": "구현",
+        "title": {"text": "② `OnSpecialChat`: 받을 때 세 곳에 쓴다", "verbatim": true},
+        "lead": null,
+        "sectionPath": ["5. 채팅 3종 자동 판별", "5.3 핵심 동작"],
+        "points": [
+          {"label": "", "text": "기록에 그 사람이 이번 카테고리에 소개한 물건을 함께 붙입니다.", "verbatim": true},
+          {"label": "", "text": "TAB을 누르면 \"누가 무엇을 들고 무슨 말을 했는지\"를 한 줄씩 비교할 수 있습니다.", "verbatim": true},
+          {"label": "", "text": "색은 보낸 사람 기준으로 여기서 한 번만 입힙니다.", "verbatim": true}
+        ],
+        "visuals": [{"kind": "code", "n": 2, "fp": "// LiarClient.cs (발췌) — 발언자의 특수채팅. 채팅창, 발언 종료 공지, TAB 기록에 각각"}],
+        "edited": true
       },
       {
         "key": "fx-screens",
@@ -780,6 +816,6 @@
         "visuals": [{"kind": "code", "n": 2, "lines": [1, 19], "fp": "// 수정 전 — Vote_System.cs. 지목 단계 동안 Update가 매 프레임 부르는 함수"}]
       }
     ],
-    "applied": "ce1cd5bddeae0eba"
+    "applied": "299b8837a2e51c90"
   }
 }

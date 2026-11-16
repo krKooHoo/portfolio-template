@@ -39,7 +39,15 @@
       "lead": {"text": "실제로 크레딧을 빼고 할당량에 더하는 일은 '납부' 버튼이 부르는 `GameManager.PayQuota` 하나뿐입니다.", "verbatim": true},
       "sectionPath": ["4. 게임 루프와 씬 간 상태", "4.2 사용법"],
       "points": [],
-      "visuals": [{"kind": "image", "src": "images/08b_terminal_quota.png", "w": 1920, "h": 1080, "caption": {"text": "터미널 할당량 납부 탭", "verbatim": true}}]
+      "visuals": [
+        {
+          "kind": "image",
+          "src": "images/08b_terminal_quota.png",
+          "w": 1920,
+          "h": 1080,
+          "caption": {"text": "터미널 할당량 납부 탭", "verbatim": true}
+        }
+      ]
     },
     {
       "key": "accident-marker",
@@ -51,7 +59,15 @@
       "lead": {"text": "패널 위에 장소와 거리가 표시되고(화면 밖이면 가장자리 화살표), 왼쪽 아래 알림에 사고 종류와 남은 시간이 뜹니다.", "verbatim": true},
       "sectionPath": ["6. 사고와 미니게임", "6.1 문제와 구조"],
       "points": [],
-      "visuals": [{"kind": "image", "src": "images/14_accident_marker.png", "w": 1920, "h": 1080, "caption": {"text": "사고가 난 패널", "verbatim": true}}]
+      "visuals": [
+        {
+          "kind": "image",
+          "src": "images/14_accident_marker.png",
+          "w": 1920,
+          "h": 1080,
+          "caption": {"text": "사고가 난 패널", "verbatim": true}
+        }
+      ]
     },
     {
       "key": "minigames",
@@ -69,6 +85,68 @@
         "sectionPath": ["6. 사고와 미니게임", "6.1 문제와 구조"],
         "sig": ["6.1 문제와 구조|table|1|타이밍 바|순서 입력|전선 잇기"]
       }
+    },
+    {
+      "key": "tsv-importer",
+      "after": "tsv-parser",
+      "chapter": "data",
+      "layout": "code",
+      "tab": "구현",
+      "title": {"text": "④ 임포터: .tsv를 텍스트 에셋으로", "verbatim": true},
+      "lead": null,
+      "sectionPath": ["3. 데이터 주도 설계", "3.3 핵심 동작"],
+      "points": [
+        {"label": "", "text": "`ScriptedImporter`로 `.tsv` 확장자를 등록해 `Resources.Load<TextAsset>`으로 읽을 수 있게 했습니다.", "verbatim": true},
+        {"label": "", "text": "`Editor` 폴더에 있어 빌드에는 포함되지 않습니다.", "verbatim": true}
+      ],
+      "visuals": [{"kind": "code", "n": 4, "fp": "// TsvImporter.cs (Editor 폴더) — Unity는 .tsv를 TextAsset으로 읽지"}]
+    },
+    {
+      "key": "spawn-rate",
+      "after": "flow-path",
+      "chapter": "pool",
+      "layout": "code",
+      "tab": "구현",
+      "title": {"text": "② 생성 주기: 넘친 시간을 버리지 않는다", "verbatim": true},
+      "lead": null,
+      "sectionPath": ["5. 재료 흐름과 오브젝트 풀링", "5.3 핵심 동작"],
+      "points": [
+        {"label": "", "text": "타이머를 0으로 되돌리지 않고 간격만큼 빼서, 프레임 시간이 들쭉날쭉해도 길게 보면 정확히 초당 1.5개가 됩니다.", "verbatim": true},
+        {"label": "", "text": "해당 종류의 풀이 바닥나면 예외 없이 이번 회차만 건너뜁니다.", "verbatim": true}
+      ],
+      "visuals": [{"kind": "code", "n": 1, "fp": "// SpawnManager.cs — 항해 중에만 초당 BaseSpawnRate개씩 만든다. 넘친 시간은 남"}]
+    },
+    {
+      "key": "minigame-base",
+      "after": "minigames",
+      "chapter": "accident",
+      "layout": "code",
+      "tab": "구현",
+      "title": {"text": "새 미니게임 추가하기", "verbatim": true},
+      "lead": null,
+      "sectionPath": ["6. 사고와 미니게임", "6.2 사용법"],
+      "points": [
+        {"label": "", "text": "`MiniGame`을 상속해 `AccidentID`와 `Begin`/`End`를 구현하고, 성공 1회마다 `Succeed()`, 빗나가면 `Miss()`를 부른다.", "verbatim": true},
+        {"label": "", "text": "`AccidentTable.tsv`에 한 줄을 추가한다 (이름, 설명, 제한시간, 성공 횟수, 안정도 감소, 비중).", "verbatim": true},
+        {"label": "", "text": "`AccidentManager`, `AccidentPanel`, `MiniGameUI`는 고치지 않습니다. 자식 클래스가 알아야 할 계약은 이것뿐입니다.", "verbatim": true}
+      ],
+      "visuals": [{"kind": "code", "n": 1, "fp": "// MiniGame.cs (발췌) — 화면이 열리면 Begin, 닫히면 End. 해결 판정과 제한시간은 A"}]
+    },
+    {
+      "key": "ts-weighted",
+      "after": "ts-singleton",
+      "chapter": "result",
+      "layout": "problem",
+      "tab": "문제 해결",
+      "title": {"text": "비중 뽑기가 경계값에서 아무것도 고르지 못하던 문제", "verbatim": true},
+      "lead": null,
+      "sectionPath": ["8. 결과 및 배운 점", "8.2 문제 해결 경험"],
+      "points": [
+        {"label": "문제", "text": "재료 종류와 사고 종류를 비중으로 뽑는 함수가, 드물게 반복문 안에서 아무것도 고르지 못했습니다.", "verbatim": true},
+        {"label": "원인", "text": "`Random.Range(float, float)`는 정수 버전과 달리 최댓값도 포함합니다. 뽑은 값이 정확히 비중 합계이면 `pick < weight`가 끝까지 거짓입니다.", "verbatim": true},
+        {"label": "해결", "text": "비중 0인 번호는 건너뛰고, 반복문이 끝나면 비중이 있는 마지막 번호를 돌려줍니다. 모두 0이면 −1입니다.", "verbatim": true}
+      ],
+      "visuals": [{"kind": "code", "n": 3, "fp": "// WeightedRandom.cs — 비중이 0인 번호는 나오지 않는다. 모두 0이면 -1"}]
     }
   ],
   "hide": []

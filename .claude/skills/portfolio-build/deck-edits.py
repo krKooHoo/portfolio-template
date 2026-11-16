@@ -518,7 +518,8 @@ def validate(p, chapters, doc):
             warns.append('visuals[%d]: §%s에 %s가 %d개뿐입니다(n=%d, 미리보기에 빨간 띠)' % (i, vh['text'], KIND_KO[kind], len(bl), nth))
             continue
         got, want = bl[nth - 1]['fp'], squash(v['fp'])
-        if (got != want) if kind == 'table' else (got[:60] != want[:60]):
+        # 앞 60자를 비교하되 끝 공백은 빼고 봄 — 60번째 글자가 공백이면 원문 지문(got)만 공백으로 끝나 어떤 fp로도 맞지 않던 것(md-blocks.js fpSame과 같은 규칙)
+        if (got != want) if kind == 'table' else (got[:60].rstrip() != want[:60].rstrip()):
             warns.append('visuals[%d]: §%s의 %s %d번째 지문이 다릅니다 — 원문 "%s"(미리보기에 빨간 띠)' % (i, vh['text'], KIND_KO[kind], nth, got))
     return errs, warns, pieces, cross
 
