@@ -208,7 +208,23 @@ const PF = (() => {
     } };
   }
 
+  // ── 다이어그램 ELK 배치(그림별로 켬, 발표 덱·상세 문서 공용) ──
+  //   원문 mermaid 블록 맨 위에 %%{init: {"layout": "elk"}}%% 한 줄이 있는 그림만 ELK로 배치. 그 줄이 없는 그림은 지금처럼 기본 배치(dagre)
+  //   그런 그림이 하나라도 있을 때만 ELK 패키지를 받아 등록(mermaid 11.4.1과 함께 나온 @mermaid-js/layout-elk 0.1.6, 버전 고정 · 처음 한 번 약 1.6MB)
+  //   flowchart·상태도·클래스도에만 적용되고 시퀀스·간트는 그대로. 못 받으면 mermaid가 기본 배치로 그림 → 'failed'를 돌려줘 부르는 쪽이 report 오류로 남김
+  //   설정 머리말(--- config: layout: elk ---)도 알아보지만, 덱은 원문 블록을 첫 줄(%% 줄은 건너뜀)로 알아보므로 %%{init}%% 줄을 권함
+  const ELK_URL = 'https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.6/dist/mermaid-layout-elk.esm.min.mjs';
+  const ELK_RE = /["']?layout["']?\s*:\s*["']?elk|flowchart-elk/i;
+  let elkLoad = null;
+  async function mermaidElk(texts) {
+    if (!(texts || []).some((x) => ELK_RE.test(x || ''))) return 'none';
+    if (!window.mermaid?.registerLayoutLoaders) return 'failed';
+    elkLoad ||= import(ELK_URL).then((m) => { mermaid.registerLayoutLoaders(m.default); return 'ok'; })
+      .catch((err) => { console.warn('[mermaid] ELK 배치를 불러오지 못해 기본 배치로 그립니다:', err); elkLoad = null; return 'failed'; });
+    return elkLoad;
+  }
+
   return { esc, inline, isUrl, shortUrl, loadJSON, loadText, encodePath, srcPath, projectUrl, docUrl, siteBase, visibleUrl, metaValue, teamLabel,
            slugger, normTitle, resolveHeading, keyOk, deckSceneFor, headingsOf, ICON, NEWTAB, link, markNewTab, themeTokens, applyTheme, contrast, hexRgb,
-           FILE_HELP, noDataHtml, isFile, notice, guardFileProtocol, noData, t, tab, label, loadStrings, stringsReport, mermaidTheme };
+           FILE_HELP, noDataHtml, isFile, notice, guardFileProtocol, noData, t, tab, label, loadStrings, stringsReport, mermaidTheme, mermaidElk };
 })();

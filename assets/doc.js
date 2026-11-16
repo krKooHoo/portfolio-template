@@ -249,6 +249,8 @@
     document.fonts?.addEventListener('loadingdone', markPrintWide);
     if (window.mermaid && figs.length) {                                // 설정(startOnLoad 끔)은 파일 맨 위에서 이미 함
       const base = { startOnLoad: false, securityLevel: 'loose', fontFamily: 'Pretendard, sans-serif' };
+      // %%{init: {"layout": "elk"}}%% 줄이 있는 그림이 있으면 ELK 배치를 먼저 등록(PF.mermaidElk, common.js — 발표 덱과 공용)
+      if (await PF.mermaidElk([...doc.querySelectorAll('.mermaid')].map((d) => d.textContent)) === 'failed') errors.push('mermaid: ELK 배치를 불러오지 못해 기본 배치로 그렸습니다');
       const run = async (cfg, sel) => {
         const nodes = doc.querySelectorAll(sel);
         if (!nodes.length) return;

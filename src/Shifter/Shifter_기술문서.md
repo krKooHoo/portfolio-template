@@ -157,6 +157,7 @@ stateDiagram-v2
 ### 2.2 아키텍처
 
 ```mermaid
+%%{init: {"layout": "elk"}}%%
 flowchart TB
     IN["입력 · SimpleInput"]
     PC["ShifterController<br/>이동 · 점프 · Shift · 일시정지"]

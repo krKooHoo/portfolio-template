@@ -112,6 +112,8 @@
   async function renderMermaid(els) {
     if (!els.length) return;
     if (!window.mermaid) { els.forEach((el) => svgCache.set(el, { error: 'Mermaid를 불러오지 못했습니다' })); return; }
+    // %%{init: {"layout": "elk"}}%% 줄이 있는 그림이 있으면 ELK 배치를 먼저 등록(PF.mermaidElk, common.js — 상세 문서와 공용)
+    if (await PF.mermaidElk(els.map((el) => el.querySelector('code')?.textContent || '')) === 'failed') info.errors.push('mermaid: ELK 배치를 불러오지 못해 기본 배치로 그렸습니다');
     mermaid.initialize({ startOnLoad: false, ...PF.mermaidTheme(), securityLevel: 'loose', fontFamily: 'Pretendard, sans-serif', suppressErrorRendering: true });
     if (!mmdHost) { mmdHost = document.createElement('div'); mmdHost.setAttribute('aria-hidden', 'true'); Object.assign(mmdHost.style, { position: 'absolute', left: '-20000px', top: '0', width: '1280px', visibility: 'hidden' }); document.body.appendChild(mmdHost); }
     let n = 0;
