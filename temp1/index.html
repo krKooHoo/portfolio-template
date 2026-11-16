@@ -28,7 +28,8 @@
 <style>
   :root { --ease: cubic-bezier(.2,.8,.2,1); }
   html { scroll-behavior: smooth; }
-  body { background: #EDEBE6; color: #141414; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  body { background: #EDEBE6; color: #141414; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    word-break: keep-all; overflow-wrap: break-word; }   /* 한글은 낱말 단위로만 꺾음(레이아웃 원칙 2 — theme/typeset.css가 기대하는 규칙) */
   /* 종이 결 — 화면 전체에 얹는 잔 무늬 */
   .grain { position: fixed; inset: 0; z-index: 40; pointer-events: none; mix-blend-mode: multiply; opacity: .55;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .42 0 0 0 0 .38 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
