@@ -328,7 +328,7 @@
         "sectionPath": ["3. Shift 속성 시스템", "3.3 핵심 동작"],
         "points": [
           {"label": "", "text": "다른 색 발판은 콜라이더 자체를 끕니다.", "verbatim": true},
-          {"label": "", "text": "이것을 끄면 캐릭터뿐 아니라 레이저 퍼즐의 빛도 그 발판을 그냥 지나갑니다. Shift가 빛의 길까지 바꾸는 이유입니다", "verbatim": true}
+          {"label": "", "text": "이것을 끄면 캐릭터뿐 아니라 레이저 퍼즐의 빛도 그 발판을 그냥 지나갑니다. Shift가 빛의 길까지 바꾸는 이유입니다", "verbatim": false}
         ],
         "visuals": [
           {
@@ -429,7 +429,7 @@
             "verbatim": true
           },
           {"label": "다시 쏠 때는 0.05 앞에서", "text": "맞은 점에서 그대로 다시 쏘면 방금 맞은 면(캐릭터 몸, 거울)을 또 맞힙니다.", "verbatim": true},
-          {"label": "", "text": "이 코드에는 색을 확인하는 줄이 없습니다. 다른 색 발판은 부딪힘 상자가 이미 꺼져 있어 빛이 그냥 지나갈 뿐입니다", "verbatim": true}
+          {"label": "", "text": "이 코드에는 색을 확인하는 줄이 없습니다. 다른 색 발판은 부딪힘 상자가 이미 꺼져 있어 빛이 그냥 지나갈 뿐입니다", "verbatim": false}
         ],
         "visuals": [
           {
@@ -449,7 +449,7 @@
         "lead": null,
         "sectionPath": ["4. 스테이지 기믹과 퍼즐", "4.3 핵심 동작"],
         "points": [
-          {"label": "부딪힘 상자를 끄는 이유", "text": "켜 두면 벽과 겹친 순간 캐릭터가 얼어붙습니다", "verbatim": true},
+          {"label": "부딪힘 상자를 끄는 이유", "text": "켜 두면 벽과 겹친 순간 캐릭터가 얼어붙습니다", "verbatim": false},
           {
             "label": "",
             "text": "대신 그림끼리 겹쳤는지(bounds)를 직접 확인해, 벽이 움직인 거리(`wallDelta`)만큼 캐릭터를 밀어 줍니다(`AddExternalMovement`).",
@@ -535,7 +535,7 @@
         "sectionPath": ["5. 보스전", "5.1 문제와 구조"],
         "points": [
           {"label": "", "text": "한 주기는 45초(대기 10 + 공격 30 + 그로기 5)입니다.", "verbatim": true},
-          {"label": "", "text": "가장 빠른 격파는 세 번째 그로기가 시작되는 약 130초(2:10)", "verbatim": true}
+          {"label": "", "text": "가장 빠른 격파는 세 번째 그로기가 시작되는 약 130초(2:10)", "verbatim": false}
         ],
         "visuals": [{"kind": "mermaid", "n": 1, "fp": "stateDiagram-v2"}]
       },
@@ -559,7 +559,7 @@
         "layout": "full",
         "tab": "결과",
         "title": {"text": "5.1 문제와 구조", "verbatim": true},
-        "lead": {"text": "총알마다 흰색·검은색이 섞여 오므로, 다가오는 총알과 다른 색이 되도록 Shift할 때를 골라야 합니다", "verbatim": true},
+        "lead": {"text": "총알마다 흰색·검은색이 섞여 오므로, 다가오는 총알과 다른 색이 되도록 Shift할 때를 골라야 합니다", "verbatim": false},
         "sectionPath": ["5. 보스전", "5.1 문제와 구조"],
         "points": [],
         "visuals": [{"kind": "table", "n": 2, "fp": "운석|난사|레이저"}]
@@ -676,7 +676,7 @@
         "layout": "full",
         "tab": "선택",
         "title": {"text": "5.4 고민과 선택", "verbatim": true},
-        "lead": {"text": "흰·검 발판이 둘 다 캐릭터 자리에 생기면 빠져나갈 방법이 없었습니다.", "verbatim": true},
+        "lead": {"text": "흰·검 발판이 둘 다 캐릭터 자리에 생기면 빠져나갈 방법이 없었습니다.", "verbatim": false},
         "sectionPath": ["5. 보스전", "5.4 고민과 선택"],
         "points": [],
         "visuals": [{"kind": "table", "n": 1, "fp": "|As-Is (07.06 ~ 07.09)|To-Be (07.10 ~)"}]
@@ -693,7 +693,7 @@
           {
             "label": "밖에서 미는 힘도 같은 검사를 거친다",
             "text": "크러셔 벽은 미는 거리(`externalDelta`)를 더하기만 하므로, 밀려도 다른 지형을 뚫지 않습니다",
-            "verbatim": true
+            "verbatim": false
           }
         ],
         "visuals": [
@@ -718,7 +718,7 @@
           {
             "label": "마지막 줄이 '얼어붙는 문제'의 원인이다",
             "text": "이미 겹쳐 있으면 어느 방향으로 재도 '바로 앞이 막힘'(거리 0)이 나오므로, 움직일 수 있는 거리(`allowed`)가 늘 0이 됩니다",
-            "verbatim": true
+            "verbatim": false
           }
         ],
         "visuals": [
@@ -739,7 +739,7 @@
         "lead": null,
         "sectionPath": ["6. 이동과 공통 시스템"],
         "points": [
-          {"label": "", "text": "제자리 점프로는 카메라가 거의 움직이지 않습니다.", "verbatim": true},
+          {"label": "", "text": "제자리 점프로는 카메라가 거의 움직이지 않습니다.", "verbatim": false},
           {"label": "", "text": "반대로 떨어질 때는 1유닛만 벗어나도 따라 내려가 착지할 곳을 먼저 보여 줍니다.", "verbatim": true}
         ],
         "visuals": [
@@ -792,10 +792,10 @@
           {
             "label": "원인",
             "text": "겹친 상태에서는 모든 방향이 '바로 앞이 막힘'(거리 0)이 됩니다. 그런데 키네마틱 이동에는 겹침을 풀어 주는 처리가 없습니다",
-            "verbatim": true
+            "verbatim": false
           },
-          {"label": "해결", "text": "크러셔 벽은 부딪힘 상자를 끄고, 겹침을 직접 확인해 벽이 움직인 만큼 캐릭터를 옮겼습니다", "verbatim": true},
-          {"label": "해결", "text": "랜덤 발판은 생기는 위치를 검사하는 규칙을 만드는 대신 기능을 뺐습니다", "verbatim": true}
+          {"label": "해결", "text": "크러셔 벽은 부딪힘 상자를 끄고, 겹침을 직접 확인해 벽이 움직인 만큼 캐릭터를 옮겼습니다", "verbatim": false},
+          {"label": "해결", "text": "랜덤 발판은 생기는 위치를 검사하는 규칙을 만드는 대신 기능을 뺐습니다", "verbatim": false}
         ],
         "visuals": []
       }
@@ -940,7 +940,7 @@
         "sectionPath": ["3. Shift 속성 시스템", "3.3 핵심 동작"],
         "points": [
           {"label": "", "text": "다른 색 발판은 콜라이더 자체를 끕니다.", "verbatim": true},
-          {"label": "", "text": "이것을 끄면 캐릭터뿐 아니라 레이저 퍼즐의 빛도 그 발판을 그냥 지나갑니다. Shift가 빛의 길까지 바꾸는 이유입니다", "verbatim": true}
+          {"label": "", "text": "이것을 끄면 캐릭터뿐 아니라 레이저 퍼즐의 빛도 그 발판을 그냥 지나갑니다. Shift가 빛의 길까지 바꾸는 이유입니다", "verbatim": false}
         ],
         "visuals": [
           {
@@ -1000,7 +1000,7 @@
             "verbatim": true
           },
           {"label": "다시 쏠 때는 0.05 앞에서", "text": "맞은 점에서 그대로 다시 쏘면 방금 맞은 면(캐릭터 몸, 거울)을 또 맞힙니다.", "verbatim": true},
-          {"label": "", "text": "이 코드에는 색을 확인하는 줄이 없습니다. 다른 색 발판은 부딪힘 상자가 이미 꺼져 있어 빛이 그냥 지나갈 뿐입니다", "verbatim": true}
+          {"label": "", "text": "이 코드에는 색을 확인하는 줄이 없습니다. 다른 색 발판은 부딪힘 상자가 이미 꺼져 있어 빛이 그냥 지나갈 뿐입니다", "verbatim": false}
         ],
         "visuals": [
           {
@@ -1020,7 +1020,7 @@
         "lead": null,
         "sectionPath": ["4. 스테이지 기믹과 퍼즐", "4.3 핵심 동작"],
         "points": [
-          {"label": "부딪힘 상자를 끄는 이유", "text": "켜 두면 벽과 겹친 순간 캐릭터가 얼어붙습니다", "verbatim": true},
+          {"label": "부딪힘 상자를 끄는 이유", "text": "켜 두면 벽과 겹친 순간 캐릭터가 얼어붙습니다", "verbatim": false},
           {
             "label": "",
             "text": "대신 그림끼리 겹쳤는지(bounds)를 직접 확인해, 벽이 움직인 거리(`wallDelta`)만큼 캐릭터를 밀어 줍니다(`AddExternalMovement`).",
@@ -1053,7 +1053,7 @@
           {
             "label": "결정 1",
             "text": "이동 판정을 BoxCast가 쥐고 있는 구조에서는 플레이어를 옮기는 길을 `CharacterController2D` 하나로 모으는 것이 가장 안전하다고 판단했습니다",
-            "verbatim": true
+            "verbatim": false
           },
           {"label": "결정 2", "text": "조준 퍼즐에서는 '지금 이 각도면 어디에 맞는가'가 바로 보여야 한다고 판단했습니다.", "verbatim": true},
           {"label": "결정 3", "text": "레이저 퍼즐은 '조준 모드 진입' 함수 하나만 부르면 되므로 범용 버튼이 맞았습니다.", "verbatim": true}
@@ -1070,7 +1070,7 @@
         "sectionPath": ["5. 보스전", "5.1 문제와 구조"],
         "points": [
           {"label": "", "text": "한 주기는 45초(대기 10 + 공격 30 + 그로기 5)입니다.", "verbatim": true},
-          {"label": "", "text": "가장 빠른 격파는 세 번째 그로기가 시작되는 약 130초(2:10)", "verbatim": true}
+          {"label": "", "text": "가장 빠른 격파는 세 번째 그로기가 시작되는 약 130초(2:10)", "verbatim": false}
         ],
         "visuals": [{"kind": "mermaid", "n": 1, "fp": "stateDiagram-v2"}]
       },
@@ -1094,7 +1094,7 @@
         "layout": "full",
         "tab": "결과",
         "title": {"text": "5.1 문제와 구조", "verbatim": true},
-        "lead": {"text": "총알마다 흰색·검은색이 섞여 오므로, 다가오는 총알과 다른 색이 되도록 Shift할 때를 골라야 합니다", "verbatim": true},
+        "lead": {"text": "총알마다 흰색·검은색이 섞여 오므로, 다가오는 총알과 다른 색이 되도록 Shift할 때를 골라야 합니다", "verbatim": false},
         "sectionPath": ["5. 보스전", "5.1 문제와 구조"],
         "points": [],
         "visuals": [{"kind": "table", "n": 2, "fp": "운석|난사|레이저"}]
@@ -1128,7 +1128,7 @@
         "layout": "full",
         "tab": "선택",
         "title": {"text": "5.4 고민과 선택", "verbatim": true},
-        "lead": {"text": "흰·검 발판이 둘 다 캐릭터 자리에 생기면 빠져나갈 방법이 없었습니다.", "verbatim": true},
+        "lead": {"text": "흰·검 발판이 둘 다 캐릭터 자리에 생기면 빠져나갈 방법이 없었습니다.", "verbatim": false},
         "sectionPath": ["5. 보스전", "5.4 고민과 선택"],
         "points": [],
         "visuals": [{"kind": "table", "n": 1, "fp": "|As-Is (07.06 ~ 07.09)|To-Be (07.10 ~)"}]
@@ -1145,7 +1145,7 @@
           {
             "label": "밖에서 미는 힘도 같은 검사를 거친다",
             "text": "크러셔 벽은 미는 거리(`externalDelta`)를 더하기만 하므로, 밀려도 다른 지형을 뚫지 않습니다",
-            "verbatim": true
+            "verbatim": false
           }
         ],
         "visuals": [
@@ -1170,7 +1170,7 @@
           {
             "label": "마지막 줄이 '얼어붙는 문제'의 원인이다",
             "text": "이미 겹쳐 있으면 어느 방향으로 재도 '바로 앞이 막힘'(거리 0)이 나오므로, 움직일 수 있는 거리(`allowed`)가 늘 0이 됩니다",
-            "verbatim": true
+            "verbatim": false
           }
         ],
         "visuals": [
@@ -1191,7 +1191,7 @@
         "lead": null,
         "sectionPath": ["6. 이동과 공통 시스템"],
         "points": [
-          {"label": "", "text": "제자리 점프로는 카메라가 거의 움직이지 않습니다.", "verbatim": true},
+          {"label": "", "text": "제자리 점프로는 카메라가 거의 움직이지 않습니다.", "verbatim": false},
           {"label": "", "text": "반대로 떨어질 때는 1유닛만 벗어나도 따라 내려가 착지할 곳을 먼저 보여 줍니다.", "verbatim": true}
         ],
         "visuals": [
@@ -1232,14 +1232,14 @@
           {
             "label": "원인",
             "text": "겹친 상태에서는 모든 방향이 '바로 앞이 막힘'(거리 0)이 됩니다. 그런데 키네마틱 이동에는 겹침을 풀어 주는 처리가 없습니다",
-            "verbatim": true
+            "verbatim": false
           },
-          {"label": "해결", "text": "크러셔 벽은 부딪힘 상자를 끄고, 겹침을 직접 확인해 벽이 움직인 만큼 캐릭터를 옮겼습니다", "verbatim": true},
-          {"label": "해결", "text": "랜덤 발판은 생기는 위치를 검사하는 규칙을 만드는 대신 기능을 뺐습니다", "verbatim": true}
+          {"label": "해결", "text": "크러셔 벽은 부딪힘 상자를 끄고, 겹침을 직접 확인해 벽이 움직인 만큼 캐릭터를 옮겼습니다", "verbatim": false},
+          {"label": "해결", "text": "랜덤 발판은 생기는 위치를 검사하는 규칙을 만드는 대신 기능을 뺐습니다", "verbatim": false}
         ],
         "visuals": []
       }
     ],
-    "applied": "4039a86cb033071a"
+    "applied": "2081d8fb10b5eb79"
   }
 }
