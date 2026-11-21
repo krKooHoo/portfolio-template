@@ -28,7 +28,8 @@
   /* 공통 틀: 목차 260 · 간격 40 · 본문 칸 · 간격 40 · 레일 300(≥1800px), 바깥 패딩 clamp(16px, 2.5vw, 48px) */
   --toc-w: 260px; --rail-w: 300px; --gap: 40px; --pad: clamp(16px, 2.5vw, 48px);
   /* ① 가운데: 최대 폭 1840, 글줄 40rem(rem인 이유: em이면 h2에서 요소마다 다르게 풀림), 도식·그림 최대 1200 */
-  --measure: 40rem; --page-max: 1840px; --fig-max: 1200px;
+  /* 11.21 사용자 요청으로 바꿈: 글·표·코드·그림·도식을 모두 같은 폭의 한 단(46rem)에 — 폭이 세 가지(글 640 · 표·코드 ~810 · 그림 ~980)라 비율이 들쭉날쭉했음 */
+  --measure: 46rem; --page-max: 1840px; --fig-max: var(--measure);
   color-scheme: var(--t-scheme, dark);
 }
 
@@ -172,7 +173,7 @@ code { font-family: var(--mono); font-size: .88em; background: var(--accent-soft
 .md :is(.pf-figure, img, .table-wrap:has(img)) { overflow-anchor: none; }
 
 /* 화면 모음: 그림만 든 표 → 같은 폭 격자(doc.js ⑥). 캡션 = 그 열의 머리 칸 */
-.md > .doc-gallery { width: 100%; max-width: min(100%, var(--fig-max)); }
+.md > .doc-gallery { max-width: min(100%, var(--fig-max)); }
 .doc-gallery { margin: 20px 0; display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 14px; overflow-anchor: none; }
 .doc-gallery figure { margin: 0; min-width: 0; }
 .doc-gallery img { display: block; width: 100%; height: auto; border-radius: calc(var(--r) * .5); border: 1px solid var(--line); cursor: zoom-in; }
@@ -232,14 +233,18 @@ dialog.lightbox::backdrop { background: rgba(10, 11, 14, .82); }
             display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; color: var(--faint); font-size: 13px; }
 .doc-foot a { color: var(--muted); text-decoration: none; }
 
-/* ── ① 가운데 정렬 폭 규칙: 글줄 40rem을 본문 칸 가운데에, 코드·표는 글줄 왼쪽에서 오른쪽으로만, 도식·그림은 가운데 최대 1200 ── */
+/* ── ① 한 단 폭 규칙(11.21 바꿈): 글·표·코드·도식·그림이 모두 같은 폭(--measure)의 한 단, 본문 칸 가운데.
+      예전: 글 40rem 가운데 · 코드·표는 글줄 왼쪽에서 오른쪽으로 넓어짐 · 도식·그림은 가운데 최대 1200 → 블록마다 폭·왼쪽 끝이 달랐음 ── */
 .doc-intro, .md > * { max-width: min(var(--measure), 100%); }
-.md > :is(pre, .table-wrap) { width: max-content; min-width: min(var(--measure), 100%); max-width: 100%; overflow-x: auto; }
-.md > :is(.mmd, .pf-figure) { width: fit-content; max-width: min(100%, var(--fig-max)); }
+.doc-intro, .md > :not(.print-only) { margin-inline: auto; }   /* :not()이 구체성을 올려 .md p · .table-wrap의 margin: … 0보다 이김 */
+.md > :is(pre, .table-wrap, .mmd, .pf-figure, .doc-gallery) { width: min(var(--measure), 100%); }
 .md > .print-only { max-width: none; }
-.doc-intro, .md > :not(pre, .table-wrap, .mmd, .pf-figure) { margin-inline: auto; }
-.md > :is(pre, .table-wrap) { margin-left: max(0px, (100% - var(--measure)) / 2); max-width: calc(100% - max(0px, (100% - var(--measure)) / 2)); }
-.md > :is(.mmd, .pf-figure) { margin-inline: auto; }
+.md .pf-figure img { width: 100%; }
+/* 표: 한 단을 꽉 채우고, 머리 칸도 줄을 바꿈(예전 nowrap 때문에 표가 단 밖으로 넘쳐 가로 스크롤이 생겼음) */
+.md .table-wrap > table { width: 100%; }
+.md th { white-space: normal; }
+/* 코드: 단 폭을 넘는 줄은 상자 안에서 다음 줄로 꺾음(가로 스크롤 없음). 들여쓰기는 그대로 */
+.md pre code, .md pre code.hljs { width: auto; min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 
 /* ── 반응형 (화면에만; 인쇄 폭에서 켜지지 않게 screen으로 한정) ── */
 @media screen and (max-width: 1799.98px) {
